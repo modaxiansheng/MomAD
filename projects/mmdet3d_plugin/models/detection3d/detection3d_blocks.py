@@ -71,6 +71,7 @@ class SparseBox3DEncoder(BaseModule):
                 output = torch.cat([output, vel_feat], dim=-1)
         if self.output_fc is not None:
             output = self.output_fc(output)
+
         return output
 
 

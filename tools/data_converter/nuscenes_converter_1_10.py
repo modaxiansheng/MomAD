@@ -99,7 +99,7 @@ def create_nuscenes_infos(root_path,
         import random
         random.shuffle(train_scenes)
         train_scenes = train_scenes[:int(len(train_scenes)*0.1)] # 0.2 为 1/5；0.5为 1/2 以此类推
-        # import pdb; pdb.set_trace()
+    
         val_scenes = splits.val
     elif version == 'v1.0-test':
         train_scenes = splits.test
@@ -126,7 +126,7 @@ def create_nuscenes_infos(root_path,
         available_scenes[available_scene_names.index(s)]['token']
         for s in val_scenes
     ])
-
+    # import pdb; pdb.set_trace()
     test = 'test' in version
     if test:
         print('test scene: {}'.format(len(train_scenes)))
@@ -139,22 +139,23 @@ def create_nuscenes_infos(root_path,
 
     metadata = dict(version=version)
     if test:
-        print('test sample: {}'.format(len(train_nusc_infos)))
-        data = dict(infos=train_nusc_infos, metadata=metadata)
-        info_path = osp.join(out_path,
-                             '{}_infos_test.pkl'.format(info_prefix))
-        mmcv.dump(data, info_path)
+        pass
+        # print('test sample: {}'.format(len(train_nusc_infos)))
+        # data = dict(infos=train_nusc_infos, metadata=metadata)
+        # info_path = osp.join(out_path,
+        #                      '{}_infos_test.pkl'.format(info_prefix))
+        # mmcv.dump(data, info_path)
     else:
         print('train sample: {}, val sample: {}'.format(
             len(train_nusc_infos), len(val_nusc_infos)))
         data = dict(infos=train_nusc_infos, metadata=metadata)
         info_path = osp.join(out_path,
-                             '{}_infos_train.pkl'.format(info_prefix))
+                             '{}_infos_1_10_train.pkl'.format(info_prefix))
         mmcv.dump(data, info_path)
-        data['infos'] = val_nusc_infos
-        info_val_path = osp.join(out_path,
-                                 '{}_infos_val.pkl'.format(info_prefix))
-        mmcv.dump(data, info_val_path)
+        # data['infos'] = val_nusc_infos
+        # info_val_path = osp.join(out_path,
+        #                          '{}_infos_val.pkl'.format(info_prefix))
+        # mmcv.dump(data, info_val_path)
 
 def get_available_scenes(nusc):
     """Get available scenes from the input nuscenes class.
@@ -224,9 +225,15 @@ def _fill_trainval_infos(nusc,
     cat2idx = {}
     for idx, dic in enumerate(nusc.category):
         cat2idx[dic['name']] = idx
-
+    # import pdb; pdb.set_trace()
     predict_helper = PredictHelper(nusc)
+    trainval_samples=[]
     for sample in mmcv.track_iter_progress(nusc.sample):
+        if sample['scene_token'] in train_scenes:
+            trainval_samples.append(sample)
+    # import pdb; pdb.set_trace()
+    for sample in mmcv.track_iter_progress(trainval_samples):
+        
         map_location = nusc.get('log', nusc.get('scene', sample['scene_token'])['log_token'])['location']
         lidar_token = sample['data']['LIDAR_TOP']
         sd_rec = nusc.get('sample_data', lidar_token)
@@ -578,25 +585,6 @@ args = parser.parse_args()
 if __name__ == '__main__':
     if args.dataset == 'nuscenes' and args.version != 'v1.0-mini':
         train_version = f'{args.version}-trainval'
-        nuscenes_data_prep(
-            root_path=args.root_path,
-            can_bus_root_path=args.canbus,
-            info_prefix=args.extra_tag,
-            version=train_version,
-            dataset_name='NuScenesDataset',
-            out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
-        test_version = f'{args.version}-test'
-        nuscenes_data_prep(
-            root_path=args.root_path,
-            can_bus_root_path=args.canbus,
-            info_prefix=args.extra_tag,
-            version=test_version,
-            dataset_name='NuScenesDataset',
-            out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
-    elif args.dataset == 'nuscenes' and args.version == 'v1.0-mini':
-        train_version = f'{args.version}'
         nuscenes_data_prep(
             root_path=args.root_path,
             can_bus_root_path=args.canbus,

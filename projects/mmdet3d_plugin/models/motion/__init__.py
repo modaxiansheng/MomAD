@@ -1,3 +1,4 @@
+from .motion_planning_head_roboAD import MotionPlanningHeadroboAD
 from .motion_planning_head import MotionPlanningHead
 from .motion_blocks import MotionPlanningRefinementModule
 from .instance_queue import InstanceQueue

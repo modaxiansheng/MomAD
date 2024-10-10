@@ -21,6 +21,8 @@ from nuscenes.prediction import PredictHelper, convert_local_coords_to_global
 
 from projects.mmdet3d_plugin.datasets.map_utils.nuscmap_extractor import NuscMapExtractor
 
+
+
 NameMapping = {
     "movable_object.barrier": "barrier",
     "vehicle.bicycle": "bicycle",
@@ -95,11 +97,11 @@ def create_nuscenes_infos(root_path,
     assert version in available_vers
     if version == 'v1.0-trainval':
         train_scenes = splits.train
-       
         import random
         random.shuffle(train_scenes)
         train_scenes = train_scenes[:int(len(train_scenes)*0.1)] # 0.2 为 1/5；0.5为 1/2 以此类推
         # import pdb; pdb.set_trace()
+        val_scenes = splits.val
         val_scenes = splits.val
     elif version == 'v1.0-test':
         train_scenes = splits.test
@@ -117,7 +119,9 @@ def create_nuscenes_infos(root_path,
     available_scene_names = [s['name'] for s in available_scenes]
     train_scenes = list(
         filter(lambda x: x in available_scene_names, train_scenes))
+    
     val_scenes = list(filter(lambda x: x in available_scene_names, val_scenes))
+    # import pdb; pdb.set_trace()
     train_scenes = set([
         available_scenes[available_scene_names.index(s)]['token']
         for s in train_scenes
@@ -126,7 +130,7 @@ def create_nuscenes_infos(root_path,
         available_scenes[available_scene_names.index(s)]['token']
         for s in val_scenes
     ])
-
+    val_scenes = set(['a178a1b5415f45c08d179bd2cacdf284', 'e005041f659c47e194cd5b18ea6fc346', 'e8099a6136804f3bb9b38ff94d98eb64', 'b789de07180846cc972118ee6d1fb027', '080a52cb8f59489b9cddc7b721808088', 'ed242d80ccb34b139aaf9ab89859332e', '325cef682f064c55a255f2625c533b75', '2f56eb47c64f43df8902d9f88aa8a019', '7210f928860043b5a7e0d3dd4b3e80ff', 'f97bf749746c4c3a8ad9f1c11eab6444', 'cba3ddd5c3664a43b6a08e586e094900', 'd29527ec841045d18d04a933e7a0afd2', 'c4df079d260241ff8015218e29b42ea7', '7052d21b95fc4bae8761b8d9524f3e42', '01e4fcbe6e49483293ce45727152b36e', '19d97841d6f64eba9f6eb9b6e8c257dc', 'fcc020250f884397965ba00c1d9ad9e6'])
     test = 'test' in version
     if test:
         print('test scene: {}'.format(len(train_scenes)))
@@ -139,21 +143,15 @@ def create_nuscenes_infos(root_path,
 
     metadata = dict(version=version)
     if test:
-        print('test sample: {}'.format(len(train_nusc_infos)))
-        data = dict(infos=train_nusc_infos, metadata=metadata)
-        info_path = osp.join(out_path,
-                             '{}_infos_test.pkl'.format(info_prefix))
-        mmcv.dump(data, info_path)
+        pass
     else:
         print('train sample: {}, val sample: {}'.format(
             len(train_nusc_infos), len(val_nusc_infos)))
         data = dict(infos=train_nusc_infos, metadata=metadata)
-        info_path = osp.join(out_path,
-                             '{}_infos_train.pkl'.format(info_prefix))
-        mmcv.dump(data, info_path)
+
         data['infos'] = val_nusc_infos
         info_val_path = osp.join(out_path,
-                                 '{}_infos_val.pkl'.format(info_prefix))
+                                 '{}_infos_val_hrad_planing_scene.pkl'.format(info_prefix))
         mmcv.dump(data, info_val_path)
 
 def get_available_scenes(nusc):
@@ -226,7 +224,12 @@ def _fill_trainval_infos(nusc,
         cat2idx[dic['name']] = idx
 
     predict_helper = PredictHelper(nusc)
+    trainval_samples=[]
     for sample in mmcv.track_iter_progress(nusc.sample):
+        if sample['scene_token'] in val_scenes :
+            trainval_samples.append(sample)
+    # import pdb; pdb.set_trace()
+    for sample in mmcv.track_iter_progress(trainval_samples):
         map_location = nusc.get('log', nusc.get('scene', sample['scene_token'])['log_token'])['location']
         lidar_token = sample['data']['LIDAR_TOP']
         sd_rec = nusc.get('sample_data', lidar_token)
@@ -586,22 +589,5 @@ if __name__ == '__main__':
             dataset_name='NuScenesDataset',
             out_dir=args.out_dir,
             max_sweeps=args.max_sweeps)
-        test_version = f'{args.version}-test'
-        nuscenes_data_prep(
-            root_path=args.root_path,
-            can_bus_root_path=args.canbus,
-            info_prefix=args.extra_tag,
-            version=test_version,
-            dataset_name='NuScenesDataset',
-            out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
-    elif args.dataset == 'nuscenes' and args.version == 'v1.0-mini':
-        train_version = f'{args.version}'
-        nuscenes_data_prep(
-            root_path=args.root_path,
-            can_bus_root_path=args.canbus,
-            info_prefix=args.extra_tag,
-            version=train_version,
-            dataset_name='NuScenesDataset',
-            out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
+
+

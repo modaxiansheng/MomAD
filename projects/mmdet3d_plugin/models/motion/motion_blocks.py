@@ -24,6 +24,7 @@ class MotionPlanningRefinementModule(BaseModule):
         ego_fut_mode=3,
     ):
         super(MotionPlanningRefinementModule, self).__init__()
+        #import pdb;pdb.set_trace()
         self.embed_dims = embed_dims
         self.fut_ts = fut_ts
         self.fut_mode = fut_mode
@@ -79,3 +80,55 @@ class MotionPlanningRefinementModule(BaseModule):
         plan_reg = self.plan_reg_branch(plan_query).reshape(bs, 1, 3 * self.ego_fut_mode, self.ego_fut_ts, 2)
         planning_status = self.plan_status_branch(ego_feature + ego_anchor_embed)
         return motion_cls, motion_reg, plan_cls, plan_reg, planning_status
+
+
+class MotionPlanning2thRefinementModule(nn.Module):
+    def __init__(
+        self,
+        embed_dims=256,
+        ego_fut_ts=6,
+        ego_fut_mode=3,
+    ):
+        super(MotionPlanning2thRefinementModule, self).__init__()
+        self.embed_dims = embed_dims
+        self.ego_fut_ts = ego_fut_ts
+        self.ego_fut_mode = ego_fut_mode
+
+        self.plan_cls_branch = nn.Sequential(
+            nn.Linear(embed_dims, embed_dims),
+            nn.ReLU(),
+            nn.LayerNorm(embed_dims),
+            nn.Linear(embed_dims, 1),
+        )
+        self.plan_reg_branch = nn.Sequential(
+            nn.Linear(embed_dims, embed_dims),
+            nn.ReLU(),
+            nn.Linear(embed_dims, embed_dims),
+            nn.ReLU(),
+            nn.Linear(embed_dims, ego_fut_ts * 2),
+        )
+        self.plan_status_branch = nn.Sequential(
+            nn.Linear(embed_dims, embed_dims),
+            nn.ReLU(),
+            nn.Linear(embed_dims, embed_dims),
+            nn.ReLU(),
+            nn.Linear(embed_dims, 10),
+        )
+
+    def init_weight(self):
+        bias_init = bias_init_with_prob(0.01)
+        nn.init.constant_(self.plan_cls_branch[-1].bias, bias_init)
+
+    def forward(
+        self,
+        plan_query,
+        ego_feature,
+        ego_anchor_embed,
+    ):
+        bs = plan_query.shape[0]
+        plan_cls = self.plan_cls_branch(plan_query).squeeze(-1)
+        plan_reg = self.plan_reg_branch(plan_query).reshape(bs, 1, 3 * self.ego_fut_mode, self.ego_fut_ts, 2)
+        planning_status = self.plan_status_branch(ego_feature + ego_anchor_embed)
+        return plan_cls, plan_reg, planning_status
+
+

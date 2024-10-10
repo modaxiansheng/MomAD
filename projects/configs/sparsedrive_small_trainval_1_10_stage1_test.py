@@ -1,7 +1,8 @@
 # ================ base config ===================
 version = 'mini'
 version = 'trainval'
-length = {'trainval': 28130, 'mini': 323}
+version = 'trainval1_10'
+length = {'trainval': 28130,'trainval1_10':2813, 'mini': 323}
 
 plugin = True
 plugin_dir = "projects/mmdet3d_plugin/"
@@ -9,12 +10,13 @@ dist_params = dict(backend="nccl")
 log_level = "INFO"
 work_dir = None
 
-total_batch_size = 48
+total_batch_size = 64
 num_gpus = 8
 batch_size = total_batch_size // num_gpus
+
 num_iters_per_epoch = int(length[version] // (num_gpus * batch_size))
-num_epochs = 10
-checkpoint_epoch_interval = 10
+num_epochs = 1000
+checkpoint_epoch_interval = 100
 
 checkpoint_config = dict(
     interval=num_iters_per_epoch * checkpoint_epoch_interval
@@ -82,7 +84,7 @@ with_quality_estimation = True
 task_config = dict(
     with_det=True,
     with_map=True,
-    with_motion_plan=True,
+    with_motion_plan=False,
 )
 
 model = dict(
@@ -274,7 +276,7 @@ model = dict(
                 embed_dims=embed_dims,
                 anchor="data/kmeans/kmeans_map_100.npy",
                 anchor_handler=dict(type="SparsePoint3DKeyPointsGenerator"),
-                num_temp_instances=33 if temporal_map else -1,
+                num_temp_instances=0 if temporal_map else -1,
                 confidence_decay=0.6,
                 feat_grad=True,
             ),
@@ -508,7 +510,7 @@ model = dict(
 # ================== data ========================
 dataset_type = "NuScenes3DDataset"
 data_root = "data/nuscenes/"
-anno_root = "data/infos/" if version == 'trainval' else "data/infos/mini/"
+anno_root = "data/infos/mini/" if version == 'mini' else "data/infos/"
 file_client_args = dict(backend="disk")
 
 img_norm_cfg = dict(
@@ -633,7 +635,7 @@ data_basic_config = dict(
 )
 eval_config = dict(
     **data_basic_config,
-    ann_file=anno_root + 'nuscenes_infos_val_hrad_planing_scene.pkl',
+    ann_file=anno_root + 'nuscenes_infos_val.pkl',
     pipeline=eval_pipeline,
     test_mode=True,
 )
@@ -653,7 +655,7 @@ data = dict(
     workers_per_gpu=batch_size,
     train=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_train.pkl",
+        ann_file=anno_root + "nuscenes_infos_1_10_train.pkl",
         pipeline=train_pipeline,
         test_mode=False,
         data_aug_conf=data_aug_conf,
@@ -682,11 +684,11 @@ data = dict(
 # ================== training ========================
 optimizer = dict(
     type="AdamW",
-    lr=3e-4,
+    lr=4e-4,
     weight_decay=0.001,
     paramwise_cfg=dict(
         custom_keys={
-            "img_backbone": dict(lr_mult=0.1),
+            "img_backbone": dict(lr_mult=0.5),
         }
     ),
 )
@@ -708,8 +710,8 @@ eval_mode = dict(
     with_det=True,
     with_tracking=True,
     with_map=True,
-    with_motion=True,
-    with_planning=True,
+    with_motion=False,
+    with_planning=False,
     tracking_threshold=0.2,
     motion_threshhold=0.2,
 )
@@ -717,5 +719,3 @@ evaluation = dict(
     interval=num_iters_per_epoch*checkpoint_epoch_interval,
     eval_mode=eval_mode,
 )
-# ================== pretrained model ========================
-load_from = 'ckpt/sparsedrive_stage1.pth'

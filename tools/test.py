@@ -218,9 +218,10 @@ def main():
     cfg.data.test.work_dir = cfg.work_dir
     print('work_dir: ',cfg.work_dir)
 
+
     # build the dataloader
     dataset = build_dataset(cfg.data.test)
-    print("distributed:", distributed)
+    import pdb;
     if distributed:
         data_loader = build_dataloader(
             dataset,

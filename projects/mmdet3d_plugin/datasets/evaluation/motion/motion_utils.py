@@ -205,12 +205,22 @@ def load_gt(nusc: NuScenes, eval_split: str, box_cls, verbose: bool = False, sec
             'Error: You are trying to evaluate on the test set but you do not have the annotations!'
 
     sample_tokens = []
+    
+    # selected_hard_scene_token = ['a178a1b5415f45c08d179bd2cacdf284', 'e005041f659c47e194cd5b18ea6fc346', 'e8099a6136804f3bb9b38ff94d98eb64', 'b789de07180846cc972118ee6d1fb027', '080a52cb8f59489b9cddc7b721808088', 'ed242d80ccb34b139aaf9ab89859332e', '325cef682f064c55a255f2625c533b75', '2f56eb47c64f43df8902d9f88aa8a019', '7210f928860043b5a7e0d3dd4b3e80ff', 'f97bf749746c4c3a8ad9f1c11eab6444', 'cba3ddd5c3664a43b6a08e586e094900', 'd29527ec841045d18d04a933e7a0afd2', 'c4df079d260241ff8015218e29b42ea7', '7052d21b95fc4bae8761b8d9524f3e42', '01e4fcbe6e49483293ce45727152b36e', '19d97841d6f64eba9f6eb9b6e8c257dc', 'fcc020250f884397965ba00c1d9ad9e6']
+    # for sample_token in sample_tokens_all:
+    #     scene_token = nusc.get('sample', sample_token)['scene_token']
+    #     scene_record = nusc.get('scene', scene_token)
+    #     if scene_record['name'] in splits[eval_split]:
+    #         if scene_token in selected_hard_scene_token:
+    #             sample_tokens.append(sample_token)
+    
+    
     for sample_token in sample_tokens_all:
         scene_token = nusc.get('sample', sample_token)['scene_token']
         scene_record = nusc.get('scene', scene_token)
         if scene_record['name'] in splits[eval_split]:
             sample_tokens.append(sample_token)
-
+    
     all_annotations = EvalBoxes()
 
     # Load annotations and filter predictions and annotations.

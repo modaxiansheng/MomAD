@@ -24,6 +24,7 @@ class SparsePoint3DDecoder(object):
         quality=None,
         output_idx=-1,
     ):
+        
         bs, num_pred, num_cls = cls_scores[-1].shape
         cls_scores = cls_scores[-1].sigmoid()
         pts_preds = pts_preds[-1].reshape(bs, num_pred, -1, self.coords_dim)

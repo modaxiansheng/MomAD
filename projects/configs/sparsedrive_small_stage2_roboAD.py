@@ -13,8 +13,8 @@ total_batch_size = 48
 num_gpus = 8
 batch_size = total_batch_size // num_gpus
 num_iters_per_epoch = int(length[version] // (num_gpus * batch_size))
-num_epochs = 10
-checkpoint_epoch_interval = 10
+num_epochs = 20
+checkpoint_epoch_interval = 2
 
 checkpoint_config = dict(
     interval=num_iters_per_epoch * checkpoint_epoch_interval
@@ -397,7 +397,7 @@ model = dict(
             task_prefix='map',
         ),
         motion_plan_head=dict(
-            type='MotionPlanningHead',
+            type='MotionPlanningHeadroboAD',
             fut_ts=fut_ts,
             fut_mode=fut_mode,
             ego_fut_ts=ego_fut_ts,
@@ -406,6 +406,7 @@ model = dict(
             plan_anchor=f'data/kmeans/kmeans_plan_{ego_fut_mode}.npy',
             embed_dims=embed_dims,
             decouple_attn=decouple_attn_motion,
+            use_rescore=True,
             instance_queue=dict(
                 type="InstanceQueue",
                 embed_dims=embed_dims,
@@ -565,7 +566,7 @@ train_pipeline = [
             'gt_ego_fut_cmd',
             'ego_status',
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id"],
+        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id","token"],
     ),
 ]
 test_pipeline = [
@@ -583,7 +584,7 @@ test_pipeline = [
             'ego_status',
             'gt_ego_fut_cmd',
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp"],
+        meta_keys=["T_global", "T_global_inv", "timestamp","token"],
     ),
 ]
 eval_pipeline = [
@@ -633,7 +634,7 @@ data_basic_config = dict(
 )
 eval_config = dict(
     **data_basic_config,
-    ann_file=anno_root + 'nuscenes_infos_val_hrad_planing_scene.pkl',
+    ann_file=anno_root + 'nuscenes_infos_val.pkl',
     pipeline=eval_pipeline,
     test_mode=True,
 )
@@ -718,4 +719,4 @@ evaluation = dict(
     eval_mode=eval_mode,
 )
 # ================== pretrained model ========================
-load_from = 'ckpt/sparsedrive_stage1.pth'
+load_from = 'ckpt/sparsedrive_stage2.pth'
