@@ -633,7 +633,7 @@ data_basic_config = dict(
 )
 eval_config = dict(
     **data_basic_config,
-    ann_file=anno_root + 'nuscenes_infos_val_hrad_planing_scene.pkl',
+    ann_file=anno_root + 'nuscenes_infos_val.pkl',
     pipeline=eval_pipeline,
     test_mode=True,
 )

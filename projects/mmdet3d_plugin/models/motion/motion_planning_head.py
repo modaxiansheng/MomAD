@@ -215,14 +215,7 @@ class MotionPlanningHead(BaseModule):
         anchor_handler,
     ):   
         # =========== det/map feature/anchor ===========
-        
         instance_feature = det_output["instance_feature"]
-        #det_output包括 ['classification', 'prediction', 'quality', 'instance_feature', 'anchor_embed', 'instance_id']
-        #det_output['classification'][0].shape  torch.Size([6, 900, 10]) (cam,anchor,class)
-        #det_output['prediction'][0].shape  torch.Size([6, 900, 11]) (cam,anchor,11) 11:{x, y, z, ln w, ln h, ln l, sin yaw, cos yaw, vx, vy, vz}
-        #det_output['quality'][0].shape  torch.Size([6, 900, 2]) (cam,anchor,2) 2:centerness,yawness
-        #det_output['instance_feature'][0].shape  torch.Size([6, 900, 256]) (cam,anchor,dim) 
-        #det_output['anchor_embed'][0].shape  torch.Size([6, 900, 256]) (cam,anchor,dim) 
         anchor_embed = det_output["anchor_embed"]
         det_classification = det_output["classification"][-1].sigmoid()
         det_anchors = det_output["prediction"][-1]
@@ -230,15 +223,8 @@ class MotionPlanningHead(BaseModule):
         _, (instance_feature_selected, anchor_embed_selected) = topk(
             det_confidence, self.num_det, instance_feature, anchor_embed
         )
-        #instance_feature_selected.shape  torch.Size([6, 50, 256])
-        map_instance_feature = map_output["instance_feature"]
-        #map_output包括dict_keys(['classification', 'prediction', 'quality', 'instance_feature', 'anchor_embed'])
-        #map_output[classification] torch.Size([6, 100, 3])
-        #map_output[prediction] torch.Size([6, 100, 40])
-        #map_output[quality] [None, None, None, None, None, None]
-        #map_output[instance_feature] torch.Size([6, 100, 256])
-        #map_output[anchor_embed] torch.Size([6, 100, 256])
 
+        map_instance_feature = map_output["instance_feature"]
         map_anchor_embed = map_output["anchor_embed"]
         map_classification = map_output["classification"][-1].sigmoid()
         map_anchors = map_output["prediction"][-1]
@@ -246,45 +232,46 @@ class MotionPlanningHead(BaseModule):
         _, (map_instance_feature_selected, map_anchor_embed_selected) = topk(
             map_confidence, self.num_map, map_instance_feature, map_anchor_embed
         )
+
         # =========== get ego/temporal feature/anchor ===========
         bs, num_anchor, dim = instance_feature.shape
         (
-            ego_feature,#torch.Size([6, 1, 256])
-            ego_anchor,#[6, 1, 11]
-            temp_instance_feature,#torch.Size([6, 901, 1, 256])
-            temp_anchor,#torch.Size([6, 901, 1, 11])
-            temp_mask,#torch.Size([6, 901, 1])
+            ego_feature,
+            ego_anchor,
+            temp_instance_feature,
+            temp_anchor,
+            temp_mask,
         ) = self.instance_queue.get(
-            det_output,#dict_keys(['classification', 'prediction', 'quality', 'instance_feature', 'anchor_embed', 'instance_id'])
-            feature_maps,#torch.Size([6, 89760, 256]) torch.Size([6, 4, 2]) torch.Size([6, 4])
-            metas,#dict_keys(['img_metas', 'timestamp', 'projection_mat', 'image_wh', 'gt_depth', 'focal', 'gt_bboxes_3d', 'gt_labels_3d', 'gt_map_labels', 'gt_map_pts', 'gt_agent_fut_trajs', 'gt_agent_fut_masks', 'gt_ego_fut_trajs', 'gt_ego_fut_masks', 'gt_ego_fut_cmd', 'ego_status'])
-            bs,#6
+            det_output,
+            feature_maps,
+            metas,
+            bs,
             mask,
             anchor_handler,
         )
-        ego_anchor_embed = anchor_encoder(ego_anchor)#torch.Size([6, 1, 256])
-        temp_anchor_embed = anchor_encoder(temp_anchor)#torch.Size([6, 901, 1, 256])
-        temp_instance_feature = temp_instance_feature.flatten(0, 1)#torch.Size([5406, 1, 256])
-        temp_anchor_embed = temp_anchor_embed.flatten(0, 1)#torch.Size([6, 901, 1, 256])
-        temp_mask = temp_mask.flatten(0, 1)#torch.Size([6, 901, 1])
+        ego_anchor_embed = anchor_encoder(ego_anchor)
+        temp_anchor_embed = anchor_encoder(temp_anchor)
+        temp_instance_feature = temp_instance_feature.flatten(0, 1)
+        temp_anchor_embed = temp_anchor_embed.flatten(0, 1)
+        temp_mask = temp_mask.flatten(0, 1)
 
         # =========== mode anchor init ===========
-        motion_anchor = self.get_motion_anchor(det_classification, det_anchors) #motion_anchor torch.Size([6, 900, 6, 12, 2]) #torch.Size([6, 900, 10])  torch.Size([6, 900, 11])
-        plan_anchor = torch.tile( #torch.Size([6, 3, 6, 6, 2])
+        motion_anchor = self.get_motion_anchor(det_classification, det_anchors)
+        plan_anchor = torch.tile(
             self.plan_anchor[None], (bs, 1, 1, 1, 1)
         )
 
         # =========== mode query init ===========
-        motion_mode_query = self.motion_anchor_encoder(gen_sineembed_for_position(motion_anchor[..., -1, :])) #torch.Size([6, 900, 6, 256])
-        plan_pos = gen_sineembed_for_position(plan_anchor[..., -1, :]) #torch.Size([6, 3, 6, 256])
-        plan_mode_query = self.plan_anchor_encoder(plan_pos).flatten(1, 2).unsqueeze(1)#torch.Size([6, 1, 18, 256])
+        motion_mode_query = self.motion_anchor_encoder(gen_sineembed_for_position(motion_anchor[..., -1, :]))
+        plan_pos = gen_sineembed_for_position(plan_anchor[..., -1, :])
+        plan_mode_query = self.plan_anchor_encoder(plan_pos).flatten(1, 2).unsqueeze(1)
 
         # =========== cat instance and ego ===========
-        instance_feature_selected = torch.cat([instance_feature_selected, ego_feature], dim=1) #torch.Size([6, 50, 256]) torch.Size([6, 50, 256]) torch.Size([6, 1, 256])
-        anchor_embed_selected = torch.cat([anchor_embed_selected, ego_anchor_embed], dim=1) #torch.Size([6, 50, 256]) torch.Size([6, 50, 256]) torch.Size([6, 1, 256])
+        instance_feature_selected = torch.cat([instance_feature_selected, ego_feature], dim=1)
+        anchor_embed_selected = torch.cat([anchor_embed_selected, ego_anchor_embed], dim=1)
 
-        instance_feature = torch.cat([instance_feature, ego_feature], dim=1) #torch.Size([6, 900, 256]) torch.Size([6, 900, 256]) torch.Size([6, 1, 256])
-        anchor_embed = torch.cat([anchor_embed, ego_anchor_embed], dim=1)#torch.Size([6, 900, 256]) torch.Size([6, 900, 256]) torch.Size([6, 1, 256])
+        instance_feature = torch.cat([instance_feature, ego_feature], dim=1)
+        anchor_embed = torch.cat([anchor_embed, ego_anchor_embed], dim=1)
 
         # =================== forward the layers ====================
         motion_classification = []

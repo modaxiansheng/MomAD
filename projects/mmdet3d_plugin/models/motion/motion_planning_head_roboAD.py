@@ -334,6 +334,7 @@ class MotionPlanningHeadroboAD(BaseModule):
         last_final_planning_prediction = planning_prediction_cmd_select[bs_indices, mode_idx] #torch.Size([3, 6, 2])
         return last_final_planning_prediction
     def select_currect_best_planning(self, last_final_planning_prediction, planning_prediction, current_ego_cmd, last_ego_cmd):
+        # import pdb; pdb.set_trace()
         ego_mask=(current_ego_cmd.argmax(-1) == last_ego_cmd.argmax(-1))
         distances_euclidean = self.euclidean_distance(last_final_planning_prediction.unsqueeze(1).repeat(1,18,1,1), planning_prediction[0].squeeze(1))
         min_idx = torch.argmin(distances_euclidean, dim=-1).cpu().numpy().tolist()
@@ -540,29 +541,46 @@ class MotionPlanningHeadroboAD(BaseModule):
         #     pass
 
         #import pdb; pdb.set_trace()
-        enhanced_plan_query = plan_query.detach()
-        if  torch.sum(self.last_plan_query>0)>0: #说明上一轮有值
-            # 计算上一轮如何对当前进行引导
-            """
-            首先,筛选出上一轮的路径出来
-            metas gt_ego_fut_trajs
-            """
-            # cmd select  
-            last_final_planning_prediction = self.last_final_planning_prediction
-            current_ego_cmd = metas['gt_ego_fut_cmd']
-            select_currect_best_planning_prediction, select_currect_idx, ego_mask = self.select_currect_best_planning(last_final_planning_prediction, planning_prediction, current_ego_cmd, self.last_ego_cmd)
-            select_last_idx = self.select_former_best_query(self.last_plan_query, self.last_ego_cmd, self.last_planning_classification)
-            last_query_mask = torch.zeros([select_last_idx.shape[0],1,18,256])
-            last_query_detach = self.last_plan_query.detach()
-            for i in range(last_query_detach.shape[0]):
-                last_query_detach[i][0][select_currect_idx[i],:] = self.last_plan_query[i][0][select_last_idx[i],:]
-            last_query_mask[:,:,select_currect_idx,:] = 1
-            ego_mask_idx = np.where(ego_mask.cpu().tolist())[0].tolist()
-            last_query_mask[ego_mask_idx,:,:,:] = 0
-            enhanced_plan_query = enhanced_plan_query + self.last_plan_query * last_query_mask.to(enhanced_plan_query.device)
-          
-
+        #判断是否是场景的第一个sample，如果是，则上一帧的结果应该是0（目的是防止不同场景的数据结合）
+        # prev_sample_token = self.nusc.get('sample', sample0_token)["prev"]
+        prev_sample_token = self.nusc.get('sample', sample0_token)["prev"]
+        # import pdb; pdb.set_trace()
+        # if plan_query.device==torch.device(type='cuda', index=1):
+        #     print(self.nusc.get('sample', sample0_token),self.nusc.get('sample', sample0_token)["next"],plan_query.device)
+        if prev_sample_token == "":
             
+            device = plan_query.device
+            self.last_planning_classification=torch.zeros([batch_size, 1, 18]).detach()
+            self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 6, 2]).detach()
+            self.last_plan_query = torch.zeros([batch_size, 1, 18, 256]).detach()
+            self.last_final_planning_prediction  = torch.zeros([batch_size, 6, 2]).detach()
+            self.last_ego_cmd = torch.zeros([batch_size, 3]).detach()
+        device = plan_query.device
+        self.last_planning_classification=self.last_planning_classification.to(device).detach()
+        self.last_planning_prediction=self.last_planning_prediction.to(device).detach()
+        self.last_plan_query = self.last_plan_query.to(device).detach()
+        self.last_final_planning_prediction  = self.last_final_planning_prediction.to(device).detach()
+        self.last_ego_cmd = self.last_ego_cmd.to(device).detach()
+        # fusion
+        
+        enhanced_plan_query = plan_query
+        last_final_planning_prediction = self.last_final_planning_prediction
+        current_ego_cmd = metas['gt_ego_fut_cmd']
+        # print(current_ego_cmd)
+        # print(self.last_ego_cmd)
+        # import pdb;pdb.set_trace()
+
+        select_currect_best_planning_prediction, select_currect_idx, ego_mask = self.select_currect_best_planning(last_final_planning_prediction, planning_prediction, current_ego_cmd, self.last_ego_cmd)
+        select_last_idx = self.select_former_best_query(self.last_plan_query, self.last_ego_cmd, self.last_planning_classification)
+        last_query_mask = torch.zeros([select_last_idx.shape[0],1,18,256])
+        last_query_detach = self.last_plan_query
+        for i in range(last_query_detach.shape[0]):
+            last_query_detach[i][0][select_currect_idx[i],:] = self.last_plan_query[i][0][select_last_idx[i],:]
+        last_query_mask[:,:,select_currect_idx,:] = 1
+        ego_mask_idx = np.where(ego_mask.cpu().tolist())[0].tolist()
+        last_query_mask[ego_mask_idx,:,:,:] = 0
+        enhanced_plan_query = enhanced_plan_query + self.last_plan_query * last_query_mask.to(enhanced_plan_query.device)
+          
         # refine 模块添加
         plan_cls_2th, plan_reg_2th, plan_status_2th = self.refine_2th_layer(enhanced_plan_query, instance_feature[:, num_anchor:], anchor_embed[:, num_anchor:])
         #(torch.Size([1, 1, 18]), torch.Size([1, 1, 18, 6, 2]), torch.Size([1, 1, 10]))
@@ -570,27 +588,18 @@ class MotionPlanningHeadroboAD(BaseModule):
         planning_prediction_refined.append(plan_reg_2th)
         planning_status_refined.append(plan_status_2th)
 
-        #判断是否是场景的第一个sample，如果是，则上一帧的结果应该是0（目的是防止不同场景的数据结合）
-        prev_sample_token = self.nusc.get('sample', sample0_token)["prev"]
 
-        
-        if prev_sample_token != "":
-            last_final_planning_prediction =self.select_last_final_planning_prediction(planning_classification,planning_prediction,metas)
-            self.last_planning_classification = torch.tensor(planning_classification[0]).detach()
-            self.last_planning_prediction = torch.tensor(planning_prediction[0]).detach()
-            self.last_plan_query = torch.tensor(plan_query).detach()
-            if self.training:
-                #import pdb;pdb.set_trace()
-                self.last_final_planning_prediction = torch.tensor(metas['gt_ego_fut_trajs'])
-            else:
-                self.last_final_planning_prediction = torch.tensor(last_final_planning_prediction).detach()
-            self.last_ego_cmd = metas['gt_ego_fut_cmd']
+        # 将当前帧的结果存到cache, 并进行detach
+        last_final_planning_prediction =self.select_last_final_planning_prediction(planning_classification,planning_prediction,metas).detach()
+        self.last_planning_classification = torch.tensor(planning_classification[0]).detach()
+        self.last_planning_prediction = torch.tensor(planning_prediction[0]).detach()
+        self.last_plan_query = torch.tensor(plan_query).detach()
+        if self.training:
+            #import pdb;pdb.set_trace()
+            self.last_final_planning_prediction = torch.tensor(metas['gt_ego_fut_trajs']).detach()
         else:
-            self.last_planning_classification=torch.zeros([batch_size, 1, 18]).detach()
-            self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 6, 2]).detach()
-            self.last_plan_query = torch.zeros([batch_size, 1, 18, 256]).detach()
-            self.last_final_planning_prediction  = torch.zeros([batch_size, 6, 2]).detach()
-            self.last_ego_cmd = torch.zeros([batch_size, 3])
+            self.last_final_planning_prediction = torch.tensor(last_final_planning_prediction).detach()
+        self.last_ego_cmd = metas['gt_ego_fut_cmd'].detach()
         
         
         planning_output = {

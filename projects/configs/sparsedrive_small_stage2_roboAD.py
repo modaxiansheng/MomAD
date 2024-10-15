@@ -13,8 +13,8 @@ total_batch_size = 48
 num_gpus = 8
 batch_size = total_batch_size // num_gpus
 num_iters_per_epoch = int(length[version] // (num_gpus * batch_size))
-num_epochs = 20
-checkpoint_epoch_interval = 2
+num_epochs = 10
+checkpoint_epoch_interval = 10
 
 checkpoint_config = dict(
     interval=num_iters_per_epoch * checkpoint_epoch_interval
@@ -27,6 +27,7 @@ log_config = dict(
     ],
 )
 load_from = None
+# resume_from = "work_dirs/sparsedrive_small_stage2_roboAD/iter_5860.pth"
 resume_from = None
 workflow = [("train", 1)]
 fp16 = dict(loss_scale=32.0)
@@ -720,3 +721,4 @@ evaluation = dict(
 )
 # ================== pretrained model ========================
 load_from = 'ckpt/sparsedrive_stage2.pth'
+# load_from = 'ckpt/sparsedrive_stage1.pth'
