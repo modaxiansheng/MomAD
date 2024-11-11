@@ -38,7 +38,7 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 
 ## Results in paper
 
-- Comprehensive results for all tasks on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
+- Planning results on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
 
 | Method | Backbone | L2 (m) 1s  | L2 (m) 2s | L2 (m) 3s | L2 (m) Avg | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | Col. (%) Avg | TPC (m) 1s | TPC (m) 2s | TPC (m) 3s | TPC (m) Avg | FPS |
 | :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |:---: |
@@ -46,14 +46,13 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 SparseDrive |ResNet50| **0.29**  | 0.58  | 0.96 |  0.61 |  **0.01** |  **0.05** |  0.18 |  **0.08** |  **0.30** |  0.57 |  0.85 |  0.57 |  **9.0 (4090)**|
 **MomAD (Ours)** |  ResNet50    |  0.31 |  **0.57** |  **0.91**  | **0.60** |  **0.01** |  **0.05**  | **0.22**  | 0.09  | **0.30** |  **0.53** |  **0.78** |  **0.54** |  7.8 (4090) | 
 
-- Open-loop planning results on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
+- Planning results for long trajectory prediction on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).  We train 10 epochs on 6s trajectories and test on 6s trajectories.
 
-| Method | L2 (m) 1s | L2 (m) 2s | L2 (m) 3s | L2 (m) Avg | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | Col. (%) Avg | FPS |
-| :---: | :---: | :---: | :---: | :---:| :---: | :---: | :---: | :---: | :---: |
-| UniAD | 0.45 | 0.70 | 1.04 | 0.73 | 0.62 | 0.58 | 0.63 | 0.61 | 1.8 |
-| VAD | 0.41 | 0.70 | 1.05 | 0.72 | 0.03 | 0.19 | 0.43 | 0.21 |4.5 |
-| SparseDrive-S | **0.29** | 0.58 | 0.96 | 0.61 | 0.01 | 0.05 | 0.18 | 0.08 | **9.0** |
-| SparseDrive-B | **0.29** | **0.55** | **0.91** | **0.58** | **0.01** | **0.02** | **0.13** | **0.06** | 7.3 |
+| Method | L2 (m) 4s  | L2 (m) 5s | L2 (m) 6s | Col. (%) 4s | Col. (%) 5s | Col. (%) 6s | TPC (m) 4s | TPC (m) 5s | TPC (m) 6s |
+| :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+SparseDrive   | 1.75|2.32|2.95| 0.87| 1.54| 2.33| 1.33| 1.66| 1.99|
+**MomAD (Ours)** |  **1.67**| **1.98**| **2.45**| **0.83**| **1.43**| **2.13**| **1.19**| **1.45**| **1.61**|
+
 
 ## Results of released checkpoint
 We found that some collision cases were not taken into consideration in our previous code, so we re-implement the evaluation metric for collision rate in released code and provide updated results.
