@@ -8,8 +8,8 @@ conda activate MomAD_env
 
 ### Install dependency packpages
 ```bash
-sparsedrive_path="path/to/MomAD"
-cd ${sparsedrive_path}
+momad_path="path/to/MomAD"
+cd ${momad_path}
 pip3 install --upgrade pip
 pip3 install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
 pip3 install -r requirement.txt
@@ -21,7 +21,7 @@ pip3 install -r requirement.txt
    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html -i https://pypi.tuna.tsinghua.edu.cn/simple
    ```
 
-2. Remember to install `flash-attn` offline. The download address for `flash_attn-0.2.2+cu113torch1.11.0-cp38-cp38-linux_x86_64.whl` is [here](https://github.com/Dao-AILab/flash-attention/releases). Move the file to the `sparsedrive` folder and execute the following command to install:
+2. Remember to install `flash-attn` offline. The download address for `flash_attn-0.2.2+cu113torch1.11.0-cp38-cp38-linux_x86_64.whl` is [here](https://github.com/Dao-AILab/flash-attention/releases). Move the file to the `momad` folder and execute the following command to install:
 
    ```
    pip install flash_attn-0.2.2+cu113torch1.11.0-cp38-cp38-linux_x86_64.whl
@@ -37,7 +37,7 @@ cd ../../../
 ### Prepare the data
 Download the [NuScenes dataset](https://www.nuscenes.org/nuscenes#download) and CAN bus expansion, put CAN bus expansion in /path/to/nuscenes, create symbolic links.
 ```bash
-cd ${sparsedrive_path}
+cd ${momad_path}
 mkdir data
 ln -s path/to/nuscenes ./data/nuscenes
 ```
@@ -66,21 +66,21 @@ wget https://download.pytorch.org/models/resnet50-19c8e357.pth -O ckpt/resnet50-
 ####  train MomAD 3s
 ```
 bash ./tools/dist_train.sh \
-   projects/configs/sparsedrive_small_stage2_roboAD.py \
+   projects/configs/momad_small_stage2_roboAD.py \
    8 \
 ```
 ####  train MomAD 6s
 ```
 bash ./tools/dist_train.sh \
-   projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
+   projects/configs/momad_small_stage2_roboAD_6s.py \
    8 \
 ```
 
 ####  test MomAD 3s
 ```
 bash ./tools/dist_test.sh \
-    projects/configs/sparsedrive_small_stage2_roboAD.py \
-    work_dirs/sparsedrive_small_stage2_roboAD/MomAD_3s.pth\
+    projects/configs/momad_small_stage2_roboAD.py \
+    work_dirs/momad_small_stage2_roboAD/MomAD_3s.pth\
     1 \
     --deterministic \
     --eval bbox
@@ -88,8 +88,8 @@ bash ./tools/dist_test.sh \
 ####  test MomAD 6s
 ```
 bash ./tools/dist_test.sh \
-    projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
-    work_dirs/sparsedrive_small_stage2_roboAD/MomAD_6s.pth\
+    projects/configs/momad_small_stage2_roboAD_6s.py \
+    work_dirs/momad_small_stage2_roboAD/MomAD_6s.pth\
     1 \
     --deterministic \
     --eval bbox
