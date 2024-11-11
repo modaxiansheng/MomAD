@@ -62,7 +62,7 @@ wget https://download.pytorch.org/models/resnet50-19c8e357.pth -O ckpt/resnet50-
 ```
 
 ### Commence training and testing
-```bash
+
 # train MomAD 3s
 ```
 bash ./tools/dist_train.sh \
