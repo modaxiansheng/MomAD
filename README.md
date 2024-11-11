@@ -1,5 +1,9 @@
 # Don’t Shake the Wheel: Momentum-Aware Planning in End-to-End Autonomous Driving
 
+<div align="center">
+  <img src="vis3_1.png" />
+</div>
+
 ## Abstract
 <div align="justify">  
 End-to-end autonomous driving frameworks facilitate seamless integration of perception and planning but often rely on one-shot trajectory prediction, lacking temporal consistency and long-horizon awareness. This limitation can lead to unstable control, undesirable shifts, and vulnerability to occlusions in single-frame perception. In this work, we propose the Momentum-Aware Driving (MomAD) framework to address these issues by introducing trajectory momentum and perception momentum to stabilize and refine trajectory prediction. MomAD consists of two key components: (1) Topological Trajectory Matching (TTM), which uses Hausdorff Distance to align predictions with prior paths and ensure temporal coherence, and (2) Momentum Planning Interactor (MPI), which cross-attends the planning query with historical spatial-temporal context. Additionally, an encoder-decoder module introduces feature perturbations to increase robustness against perception noise. To quantify planning stability, we propose the Trajectory Prediction Consistency (TPC) metric, showing that MomAD achieves long-term consistency (>3s) on the nuScenes dataset. We further curate the challenging Turning-nuScenes validation set, focused on turning scenarios, where MomAD surpasses state-of-the-art methods, highlighting its enhanced stability and responsiveness in dynamic driving conditions.
