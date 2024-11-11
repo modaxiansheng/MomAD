@@ -53,7 +53,7 @@ SparseDrive |ResNet50| **0.29**  | 0.58  | 0.96 |  0.61 |  **0.01** |  **0.05** 
 SparseDrive   | 1.75|2.32|2.95| 0.87| 1.54| 2.33| 1.33| 1.66| 1.99|
 **MomAD (Ours)** |  **1.67**| **1.98**| **2.45**| **0.83**| **1.43**| **2.13**| **1.19**| **1.45**| **1.61**|
 
-- Planning results on the Turning-nuScenes validation dataset [Turning-nuScenes ](projects/configs/sparsedrive_small_stage1.py).  We train 10 epochs on 6s trajectories and test on 6s trajectories.
+- Planning results on the Turning-nuScenes validation dataset [Turning-nuScenes ](nuscenes_infos_val_hrad_planing_scene.pkl).  We train 10 epochs on 6s trajectories and test on 6s trajectories.
 
 | Method | L2 (m) 4s  | L2 (m) 5s | L2 (m) 6s | Col. (%) 4s | Col. (%) 5s | Col. (%) 6s | TPC (m) 4s | TPC (m) 5s | TPC (m) 6s |
 | :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
