@@ -63,20 +63,20 @@ wget https://download.pytorch.org/models/resnet50-19c8e357.pth -O ckpt/resnet50-
 
 ### Commence training and testing
 
-# train MomAD 3s
+####  train MomAD 3s
 ```
 bash ./tools/dist_train.sh \
    projects/configs/sparsedrive_small_stage2_roboAD.py \
    8 \
 ```
-# train MomAD 6s
+####  train MomAD 6s
 ```
 bash ./tools/dist_train.sh \
    projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
    8 \
 ```
 
-# test MomAD 3s
+####  test MomAD 3s
 ```
 bash ./tools/dist_test.sh \
     projects/configs/sparsedrive_small_stage2_roboAD.py \
@@ -85,7 +85,7 @@ bash ./tools/dist_test.sh \
     --deterministic \
     --eval bbox
 ```
-# test MomAD 6s
+####  test MomAD 6s
 ```
 bash ./tools/dist_test.sh \
     projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
