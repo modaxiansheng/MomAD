@@ -4,7 +4,7 @@
 <div align="justify">  
 End-to-end autonomous driving frameworks facilitate seamless integration of perception and planning but often rely on one-shot trajectory prediction, lacking temporal consistency and long-horizon awareness. This limitation can lead to unstable control, undesirable shifts, and vulnerability to occlusions in single-frame perception. In this work, we propose the Momentum-Aware Driving (MomAD) framework to address these issues by introducing trajectory momentum and perception momentum to stabilize and refine trajectory prediction. MomAD consists of two key components: (1) Topological Trajectory Matching (TTM), which uses Hausdorff Distance to align predictions with prior paths and ensure temporal coherence, and (2) Momentum Planning Interactor (MPI), which cross-attends the planning query with historical spatial-temporal context. Additionally, an encoder-decoder module introduces feature perturbations to increase robustness against perception noise. To quantify planning stability, we propose the Trajectory Prediction Consistency (TPC) metric, showing that MomAD achieves long-term consistency (>3s) on the nuScenes dataset. We further curate the challenging Turning-nuScenes validation set, focused on turning scenarios, where MomAD surpasses state-of-the-art methods, highlighting its enhanced stability and responsiveness in dynamic driving conditions.
 </div>
-
+<div align="justify">  
 :fire: Contributions:
 * **Momentum Planning Concept.** We propose the concept of momentum planning in multi-modal trajectory planning, drawing an analogy to human driving behavior. We provide theoretical evidence to demonstrate the effectiveness of our momentum planning in addressing temporal consistency in end-to-end autonomous driving
 
@@ -15,7 +15,7 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 * **Trajectory Prediction Consistency (TPC) Metric.** We introduce the TPC metric to quantitatively assess the consistency of trajectory predictions in existing end-to-end autonomous driving methods, addressing a critical gap in the evaluation of trajectory planning.
 
 ***Performance Evaluation.** Through extensive experiments on the nuScenes dataset, we demonstrate that MomAD significantly outperforms SOTA methods in terms of trajectory consistency and stability, highlighting its effectiveness in tackling challenges within autonomous driving planning. We evaluated the results of long trajectory predictions, specifically at 4, 5, and 6 seconds, which are critical for ensuring the stability of autonomous driving systems.
-
+</div>
 ## Method
 <center>
     <img style="border-radius: 0.3125em;
