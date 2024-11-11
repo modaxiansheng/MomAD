@@ -2,18 +2,30 @@
 
 ### Set up a new virtual environment
 ```bash
-conda create -n sparsedrive python=3.8 -y
-conda activate sparsedrive
+conda create -n MomAD_env python=3.8 -y
+conda activate MomAD_env
 ```
 
 ### Install dependency packpages
 ```bash
-sparsedrive_path="path/to/sparsedrive"
+sparsedrive_path="path/to/MomAD"
 cd ${sparsedrive_path}
 pip3 install --upgrade pip
 pip3 install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
 pip3 install -r requirement.txt
 ```
+:fire
+1. It is necessary to install the `mmcv-full` version of `mmcv`. It is recommended to use `cuda113` and `torch1.11.0`, and to install `mmcv` version `1.7.2`. Use the following command: 
+   
+   ```
+   pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+
+2. Remember to install `flash-attn` offline. The download address for `flash_attn-0.2.2+cu113torch1.11.0-cp38-cp38-linux_x86_64.whl` is [here](https://github.com/Dao-AILab/flash-attention/releases). Move the file to the `sparsedrive` folder and execute the following command to install:
+
+   ```
+   pip install flash_attn-0.2.2+cu113torch1.11.0-cp38-cp38-linux_x86_64.whl
+   ```
 
 ### Compile the deformable_aggregation CUDA op
 ```bash
