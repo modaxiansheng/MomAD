@@ -1,4 +1,4 @@
-# SparseDrive: End-to-End Autonomous Driving via Sparse Scene Representation
+# Don’t Shake the Wheel: Momentum-Aware Planning in End-to-End Autonomous Driving
 
 https://github.com/swc-17/SparseDrive/assets/64842878/867276dc-7c19-4e01-9a8e-81c4ed844745
 
