@@ -55,17 +55,22 @@ SparseDrive   | 1.75|2.32|2.95| 0.87| 1.54| 2.33| 1.33| 1.66| 1.99|
 
 - Planning results on the Turning-nuScenes validation dataset [Turning-nuScenes ](nuscenes_infos_val_hrad_planing_scene.pkl).  We train 10 epochs on 6s trajectories and test on 6s trajectories.
 
-| Method | L2 (m) 4s  | L2 (m) 5s | L2 (m) 6s | Col. (%) 4s | Col. (%) 5s | Col. (%) 6s | TPC (m) 4s | TPC (m) 5s | TPC (m) 6s |
+| Method |L2 (m) 1s  | L2 (m) 2s | L2 (m) 3s  | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | TPC (m) 1s | TPC (m) 2s | TPC (m) 3s |
 | :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-SparseDrive   | 1.75|2.32|2.95| 0.87| 1.54| 2.33| 1.33| 1.66| 1.99|
-**MomAD (Ours)** |  **1.67**| **1.98**| **2.45**| **0.83**| **1.43**| **2.13**| **1.19**| **1.45**| **1.61**|
+SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.70 | 1.33 | 0.79|
+**MomAD (Ours)** | 0.33| 0.70| 1.24| 0.76| 0.03| 0.13| 0.79| 0.32| 0.32| 0.54| 1.05| 0.63|
 
 ## Trajectory Prediction Consistency (TPC) metric
 To evaluate the planning stability of MomAD, we propose a new [Trajectory Prediction Consistency (TPC) metric](/projects/mmdet3d_plugin/datasets/evaluation/planning/planning_eval_roboAD_6s.py) to measure consistency between predicted and historical trajectories.
 
-## 
-
-
+## How to generate a 6s nuScenes trajectory dataset？
+```python tools/data_converter/nuscenes_converter_6s.py nuscenes \
+    --root-path ./data/nuscenes \
+    --canbus ./data/nuscenes \
+    --out-dir ./data/infos/ \
+    --extra-tag nuscenes \
+    --version v1.0
+```
 ## Quick Start
 [Quick Start](docs/quick_start.md)
 
