@@ -43,8 +43,8 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 | Method | Backbone | L2 (m) 1s  | L2 (m) 2s | L2 (m) 3s | L2 (m) Avg | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | Col. (%) Avg | TPC (m) 1s | TPC (m) 2s | TPC (m) 3s | TPC (m) Avg | FPS |
 | :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |:---: |
 | UniAD | ResNet101 | 0.45 | 0.70 | 1.04 |0.73 | 0.62 | 0.58 | 0.63 | 0.61 |0.41 | 0.68 | 0.97 | 0.68 |1.8 (A100)|
-SparseDrive |ResNet50| 0.29  | 0.58  | 0.96 |  0.61 |  0.01 |  0.05 |  0.18 |  0.08 |  0.30 |  0.57 |  0.85 |  0.57 |  9.0 (4090)|
-MomAD (Ours) |  ResNet50    |  0.31 |  0.57 |  0.91  | 0.60 |  0.01 |  0.05  | 0.22  | 0.09  | 0.30 |  0.53 |  0.78 |  0.54 |  7.8 (4090) | 
+SparseDrive |ResNet50| **0.29**  | 0.58  | 0.96 |  0.61 |  **0.01** |  **0.05** |  0.18 |  **0.08** |  **0.30** |  0.57 |  0.85 |  0.57 |  **9.0 (4090)**|
+**MomAD (Ours)** |  ResNet50    |  0.31 |  **0.57** |  **0.91**  | **0.60** |  **0.01** |  **0.05**  | **0.22**  | 0.09  | **0.30** |  **0.53** |  **0.78** |  **0.54** |  7.8 (4090) | 
 
 - Open-loop planning results on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
 
