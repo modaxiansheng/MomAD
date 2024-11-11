@@ -1,8 +1,6 @@
 # Don’t Shake the Wheel: Momentum-Aware Planning in End-to-End Autonomous Driving
 
-<div align="center">
-  <img src="vis3_1.png" />
-</div>
+
 
 ## Abstract
 <div align="justify">  
@@ -78,6 +76,12 @@ python tools/data_converter/nuscenes_converter_6s.py nuscenes \
 ```
 ## Quick Start
 [Quick Start](docs/quick_start.md)
+
+## Visualization
+<div align="center">
+  <img src="vis3_1.png" />
+</div>
+
 
 ## Acknowledgement
 - [SparseDrive](https://github.com/swc-17/SparseDrive)
