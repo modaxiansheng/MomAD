@@ -14,7 +14,7 @@ pip3 install --upgrade pip
 pip3 install torch==1.13.0+cu116 torchvision==0.14.0+cu116 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
 pip3 install -r requirement.txt
 ```
-:fire
+:fire: Tips
 1. It is necessary to install the `mmcv-full` version of `mmcv`. It is recommended to use `cuda113` and `torch1.11.0`, and to install `mmcv` version `1.7.2`. Use the following command: 
    
    ```
@@ -63,13 +63,37 @@ wget https://download.pytorch.org/models/resnet50-19c8e357.pth -O ckpt/resnet50-
 
 ### Commence training and testing
 ```bash
-# train
-sh scripts/train.sh
-
-# test
-sh scripts/test.sh
+# train MomAD 3s
+```
+bash ./tools/dist_train.sh \
+   projects/configs/sparsedrive_small_stage2_roboAD.py \
+   8 \
+```
+# train MomAD 6s
+```
+bash ./tools/dist_train.sh \
+   projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
+   8 \
 ```
 
+# test MomAD 3s
+```
+bash ./tools/dist_test.sh \
+    projects/configs/sparsedrive_small_stage2_roboAD.py \
+    work_dirs/sparsedrive_small_stage2_roboAD/MomAD_3s.pth\
+    1 \
+    --deterministic \
+    --eval bbox
+```
+# test MomAD 6s
+```
+bash ./tools/dist_test.sh \
+    projects/configs/sparsedrive_small_stage2_roboAD_6s.py \
+    work_dirs/sparsedrive_small_stage2_roboAD/MomAD_6s.pth\
+    1 \
+    --deterministic \
+    --eval bbox
+```
 ### Visualization
 ```
 sh scripts/visualize.sh
