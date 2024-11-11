@@ -32,7 +32,7 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">The overall architecture of **MomAD**. **MomAD**, as a multi-model trajectory end-to-end autonomous driving method, first encodes multi-view images into feature maps, then learns a sparse scene representation through sparse perception, and finally performs a momentum-guided motion planner to accomplish the planning task. The momentum planning module integrates historical planning to inform current planning, effectively addressing the issue of maximum score deviation in multi-modal trajectories.</div>
+    padding: 2px;">The overall architecture of MomAD. MomAD, as a multi-model trajectory end-to-end autonomous driving method, first encodes multi-view images into feature maps, then learns a sparse scene representation through sparse perception, and finally performs a momentum-guided motion planner to accomplish the planning task. The momentum planning module integrates historical planning to inform current planning, effectively addressing the issue of maximum score deviation in multi-modal trajectories.</div>
 </center>
 
 
