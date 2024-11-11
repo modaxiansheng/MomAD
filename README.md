@@ -40,11 +40,11 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 
 - Comprehensive results for all tasks on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
 
-| Method | NDS | AMOTA | minADE (m) | L2 (m) Avg | Col. (%) Avg | Training Time (h) | FPS |
-| :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: |
-| UniAD | 0.498 | 0.359 | 0.71 | 0.73 | 0.61 | 144 | 1.8 |
-| SparseDrive-S | 0.525 | 0.386 | 0.62 | 0.61 | 0.08 | **20** | **9.0** |
-| SparseDrive-B | **0.588** | **0.501** | **0.60** | **0.58** | **0.06** | 30 | 7.3 |
+| Method | Backbone | L2 (m) 1s  | L2 (m) 2s | L2 (m) 3s | L2 (m) Avg | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | Col. (%) Avg | TPC (m) 1s | TPC (m) 2s | TPC (m) 3s | TPC (m) Avg | FPS |
+| :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |:---: |
+| UniAD | ResNet101 | 0.45 | 0.70 | 1.04 |0.73 | 0.62 | 0.58 | 0.63 | 0.61 |0.41 | 0.68 | 0.97 | 0.68 |1.8 (A100)|
+SparseDrive | 0.29  | 0.58  | 0.96 |  0.61 |  0.01 |  0.05 |  0.18 |  0.08 |  0.30 |  0.57 |  0.85 |  0.57 |  9.0 (4090)|
+MomAD (Ours) |  Camera |  ResNet50 |  0.31 |  0.57 |  0.91  | 0.60 |  0.01 |  0.05  | 0.22  | 0.09  | 0.30 |  0.53 |  0.78 |  0.54 |  7.8 (4090) | 
 
 - Open-loop planning results on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
 
@@ -76,22 +76,9 @@ We found that some collision cases were not taken into consideration in our prev
 ## Quick Start
 [Quick Start](docs/quick_start.md)
 
-## Citation
-If you find SparseDrive useful in your research or applications, please consider giving us a star &#127775; and citing it by the following BibTeX entry.
-```
-@article{sun2024sparsedrive,
-  title={SparseDrive: End-to-End Autonomous Driving via Sparse Scene Representation},
-  author={Sun, Wenchao and Lin, Xuewu and Shi, Yining and Zhang, Chuang and Wu, Haoran and Zheng, Sifa},
-  journal={arXiv preprint arXiv:2405.19620},
-  year={2024}
-}
-```
-
 ## Acknowledgement
-- [Sparse4D](https://github.com/HorizonRobotics/Sparse4D)
+- [SparseDrive](https://github.com/swc-17/SparseDrive)
 - [UniAD](https://github.com/OpenDriveLab/UniAD) 
 - [VAD](https://github.com/hustvl/VAD)
-- [StreamPETR](https://github.com/exiawsh/StreamPETR)
-- [StreamMapNet](https://github.com/yuantianyuan01/StreamMapNet)
 - [mmdet3d](https://github.com/open-mmlab/mmdetection3d)
 
