@@ -1,6 +1,6 @@
 # ================ base config ===================
 version = 'mini'
-# version = 'trainval'
+version = 'trainval'
 length = {'trainval': 28130, 'mini': 323}
 
 plugin = True
@@ -13,8 +13,8 @@ total_batch_size = 48
 num_gpus = 8
 batch_size = total_batch_size // num_gpus
 num_iters_per_epoch = int(length[version] // (num_gpus * batch_size))
-num_epochs = 20
-checkpoint_epoch_interval = 20
+num_epochs = 10
+checkpoint_epoch_interval = 10
 
 checkpoint_config = dict(
     interval=num_iters_per_epoch * checkpoint_epoch_interval
@@ -27,7 +27,6 @@ log_config = dict(
     ],
 )
 load_from = None
-# resume_from = "work_dirs/sparsedrive_small_stage2_roboAD/iter_5860.pth"
 resume_from = None
 workflow = [("train", 1)]
 fp16 = dict(loss_scale=32.0)
@@ -59,7 +58,7 @@ roi_size = (30, 60)
 num_sample = 20
 fut_ts = 12
 fut_mode = 6
-ego_fut_ts = 6
+ego_fut_ts = 12
 ego_fut_mode = 6
 queue_length = 4 # history + current
 
@@ -121,7 +120,7 @@ model = dict(
         type="SparseDriveHead",
         task_config=task_config,
         det_head=dict(
-            type="Sparse4DHead_roboAD",
+            type="Sparse4DHead",
             cls_threshold_to_reg=0.05,
             decouple_attn=decouple_attn,
             instance_bank=dict(
@@ -145,11 +144,6 @@ model = dict(
             ),
             num_single_frame_decoder=num_single_frame_decoder,
             operation_order=(
-                # [
-                #     "gnn",
-                # "denoise",
-                # ]
-                # +
                 [
                     "gnn",
                     "norm",
@@ -403,7 +397,7 @@ model = dict(
             task_prefix='map',
         ),
         motion_plan_head=dict(
-            type='MotionPlanningHeadroboAD',
+            type='MotionPlanningHead',
             fut_ts=fut_ts,
             fut_mode=fut_mode,
             ego_fut_ts=ego_fut_ts,
@@ -412,7 +406,6 @@ model = dict(
             plan_anchor=f'data/kmeans/kmeans_plan_{ego_fut_mode}.npy',
             embed_dims=embed_dims,
             decouple_attn=decouple_attn_motion,
-            use_rescore=True,
             instance_queue=dict(
                 type="InstanceQueue",
                 embed_dims=embed_dims,
@@ -572,7 +565,7 @@ train_pipeline = [
             'gt_ego_fut_cmd',
             'ego_status',
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id","token"],
+        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id"],
     ),
 ]
 test_pipeline = [
@@ -590,7 +583,7 @@ test_pipeline = [
             'ego_status',
             'gt_ego_fut_cmd',
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp","token"],
+        meta_keys=["T_global", "T_global_inv", "timestamp"],
     ),
 ]
 eval_pipeline = [
@@ -618,8 +611,7 @@ eval_pipeline = [
             'gt_ego_fut_cmd',
             'fut_boxes'
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id","token"],
-        # meta_keys=['token', 'timestamp']
+        meta_keys=['token', 'timestamp']
     ),
 ]
 
@@ -641,7 +633,7 @@ data_basic_config = dict(
 )
 eval_config = dict(
     **data_basic_config,
-    ann_file=anno_root + 'nuscenes_infos_val.pkl',
+    ann_file=anno_root + 'nuscenes_infos_val_6s.pkl',
     pipeline=eval_pipeline,
     test_mode=True,
 )
@@ -661,7 +653,7 @@ data = dict(
     workers_per_gpu=batch_size,
     train=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_train.pkl",
+        ann_file=anno_root + "nuscenes_infos_train_6s.pkl",
         pipeline=train_pipeline,
         test_mode=False,
         data_aug_conf=data_aug_conf,
@@ -671,7 +663,7 @@ data = dict(
     ),
     val=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_val.pkl",
+        ann_file=anno_root + "nuscenes_infos_val_6s.pkl",
         pipeline=test_pipeline,
         data_aug_conf=data_aug_conf,
         test_mode=True,
@@ -679,7 +671,7 @@ data = dict(
     ),
     test=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_val.pkl",
+        ann_file=anno_root + "nuscenes_infos_val_6s.pkl",
         pipeline=test_pipeline,
         data_aug_conf=data_aug_conf,
         test_mode=True,
@@ -727,4 +719,3 @@ evaluation = dict(
 )
 # ================== pretrained model ========================
 load_from = 'ckpt/sparsedrive_stage2.pth'
-# load_from = 'ckpt/sparsedrive_stage1.pth'

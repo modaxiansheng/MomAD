@@ -21,11 +21,11 @@ from mmdet.core import reduce_mean
 from .feature_enhance import FeatureEnhancer
 from ..blocks import DeformableFeatureAggregation as DFG
 
-__all__ = ["Sparse4DHead"]
+__all__ = ["Sparse4DHead_roboAD"]
 
 
 @HEADS.register_module()
-class Sparse4DHead(BaseModule):
+class Sparse4DHead_roboAD(BaseModule):
     def __init__(
         self,
         instance_bank: dict,
@@ -55,7 +55,7 @@ class Sparse4DHead(BaseModule):
         init_cfg: dict = None,
         **kwargs,
     ):
-        super(Sparse4DHead, self).__init__(init_cfg)
+        super(Sparse4DHead_roboAD, self).__init__(init_cfg)
         self.num_decoder = num_decoder
         self.num_single_frame_decoder = num_single_frame_decoder
         self.gt_cls_key = gt_cls_key
@@ -72,6 +72,7 @@ class Sparse4DHead(BaseModule):
         else:
             self.reg_weights = reg_weights
 
+        # import pdb; pdb.set_trace()
         if operation_order is None:
             operation_order = [
                 "temp_gnn",
@@ -85,6 +86,7 @@ class Sparse4DHead(BaseModule):
             ] * num_decoder
             # delete the 'gnn' and 'norm' layers in the first transformer blocks
             operation_order = operation_order[3:]
+        # import pdb; pdb.set_trace()
         self.operation_order = operation_order
 
         # =========== build modules ===========
@@ -106,6 +108,7 @@ class Sparse4DHead(BaseModule):
             "ffn": [ffn, FEEDFORWARD_NETWORK],
             "deformable": [deformable_model, ATTENTION],
             "refine": [refine_layer, PLUGIN_LAYERS],
+            "denoise": [graph_model, ATTENTION],
         }
         self.layers = nn.ModuleList(
             [
@@ -113,6 +116,7 @@ class Sparse4DHead(BaseModule):
                 for op in self.operation_order
             ]
         )
+        # import pdb;pdb.set_trace()
         self.embed_dims = self.instance_bank.embed_dims
         if self.decouple_attn:
             self.fc_before = nn.Linear(
@@ -194,6 +198,7 @@ class Sparse4DHead(BaseModule):
         # 1. get dn metas: noisy-anchors and corresponding GT
         # 2. concat learnable instances and noisy instances
         # 3. get attention mask
+        
         attn_mask = None
         dn_metas = None
         temp_dn_reg_target = None
@@ -259,11 +264,15 @@ class Sparse4DHead(BaseModule):
         prediction = []
         classification = []
         quality = []
+        # import pdb;pdb.set_trace()
         
         for i, op in enumerate(self.operation_order):
+            # print("op",op)
             if self.layers[i] is None:
                 continue
             elif op == "temp_gnn":
+                # print("------------------temp_gnn--------------------------------")
+
                 instance_feature = self.graph_model(
                     i,
                     instance_feature,
@@ -275,7 +284,18 @@ class Sparse4DHead(BaseModule):
                     if temp_instance_feature is None
                     else None,
                 )
+            
+            elif op == "denoise":
+                # print("--------------------denoise------------------------------")
+                if self.training:
+                    model = FeatureEnhancer(input_dim=256, noise_level=0.1)
+                    instance_feature = model(instance_feature)
+                else:
+                    model = FeatureEnhancer(input_dim=256, noise_level=0.0)
+                    instance_feature = model(instance_feature)
             elif op == "gnn":
+                # print("--------------------gnn------------------------------")
+
                 instance_feature = self.graph_model(
                     i,
                     instance_feature,
@@ -284,8 +304,10 @@ class Sparse4DHead(BaseModule):
                     attn_mask=attn_mask,
                 )
             elif op == "norm" or op == "ffn":
+                # print("--------------------norm----------------ffn--------------")
                 instance_feature = self.layers[i](instance_feature)
             elif op == "deformable":
+                # print("--------------------deformable------------------------------")
                 instance_feature = self.layers[i](
                     instance_feature,
                     anchor,
@@ -294,6 +316,7 @@ class Sparse4DHead(BaseModule):
                     metas,
                 )
             elif op == "refine":
+                # print("--------------------refine------------------------------")
                 anchor, cls, qt = self.layers[i](
                     instance_feature,
                     anchor,

@@ -8,7 +8,7 @@ from mmcv.utils import print_log
 from mmdet.datasets import build_dataset, build_dataloader
 
 from projects.mmdet3d_plugin.datasets.utils import box3d_to_corners
-
+from nuscenes.nuscenes import NuScenes
 
 def check_collision(ego_box, boxes):
     '''
@@ -55,7 +55,7 @@ def get_yaw(traj):
 class PlanningMetric():
     def __init__(
         self,
-        n_future=6,
+        n_future=12,
         compute_on_step: bool = False,
     ):
         self.W = 1.85
@@ -68,6 +68,7 @@ class PlanningMetric():
         self.obj_col = torch.zeros(self.n_future)
         self.obj_box_col = torch.zeros(self.n_future)
         self.L2 = torch.zeros(self.n_future)
+        self.Consist = torch.zeros(self.n_future)
         self.total = torch.tensor(0)
 
     def evaluate_single_coll(self, traj, fut_boxes):
@@ -111,32 +112,52 @@ class PlanningMetric():
         '''
         return torch.sqrt((((trajs[:, :, :2] - gt_trajs[:, :, :2]) ** 2) * gt_trajs_mask).sum(dim=-1)) 
 
-    def update(self, trajs, gt_trajs, gt_trajs_mask, fut_boxes):
+    def compute_Consist(self, trajs, last_final_planning,gt_trajs, gt_trajs_mask):
+        '''
+        trajs: torch.Tensor (B, n_future, 3)
+        gt_trajs: torch.Tensor (B, n_future, 3)
+        '''
+
+        return torch.sqrt(((((trajs[:, :, :2] - last_final_planning[:, :, :2])) ** 2) * gt_trajs_mask).sum(dim=-1)) 
+    def update(self, trajs, gt_trajs, gt_trajs_mask, fut_boxes,last_final_planning):
+        """
+        trajs  pred_final_planning
+        gt_trajs  gt_ego_fut_trajs
+        """
+        # import pdb; pdb.set_trace()
         assert trajs.shape == gt_trajs.shape
         trajs[..., 0] = - trajs[..., 0]
         gt_trajs[..., 0] = - gt_trajs[..., 0]
         L2 = self.compute_L2(trajs, gt_trajs, gt_trajs_mask)
+        Consist = self.compute_Consist(trajs, last_final_planning,gt_trajs, gt_trajs_mask)
         obj_coll_sum, obj_box_coll_sum = self.evaluate_coll(trajs[:,:,:2], gt_trajs[:,:,:2], fut_boxes)
 
         self.obj_col += obj_coll_sum
         self.obj_box_col += obj_box_coll_sum
         self.L2 += L2.sum(dim=0)
+        self.Consist += Consist.sum(dim=0)
         self.total +=len(trajs)
 
     def compute(self):
         return {
             'obj_col': self.obj_col / self.total,
             'obj_box_col': self.obj_box_col / self.total,
-            'L2' : self.L2 / self.total
+            'L2' : self.L2 / self.total,
+            'Consist':self.Consist / self.total
         }
 
-
-def planning_eval(results, eval_config, logger):
+# nusc = NuScenes(version='v1.0-trainval', dataroot="data/nuscenes/", verbose=True)
+def planning_eval_roboAD_6s(results, eval_config, logger):
     dataset = build_dataset(eval_config)
     dataloader = build_dataloader(
             dataset, samples_per_gpu=1, workers_per_gpu=1, shuffle=False, dist=False)
     planning_metrics = PlanningMetric()
+    last_final_planning = torch.zeros([1,12,2])
+    # import pdb; pdb.set_trace()
+
     for i, data in enumerate(tqdm(dataloader)):
+        # next_token=nusc.get('sample', data['img_metas'].data[0][0]["token"])["next"]
+        # import pdb; pdb.set_trace()
         sdc_planning = data['gt_ego_fut_trajs'].cumsum(dim=-2).unsqueeze(1)
         sdc_planning_mask = data['gt_ego_fut_masks'].unsqueeze(-1).repeat(1, 1, 2).unsqueeze(1)
         command = data['gt_ego_fut_cmd'].argmax(dim=-1).item()
@@ -145,8 +166,8 @@ def planning_eval(results, eval_config, logger):
             continue
         res = results[i]
         pred_sdc_traj = res['img_bbox']['final_planning'].unsqueeze(0)
-        planning_metrics.update(pred_sdc_traj[:, :6, :2], sdc_planning[0,:, :6, :2], sdc_planning_mask[0,:, :6, :2], fut_boxes)
-       
+        planning_metrics.update(pred_sdc_traj[:, :12, :2], sdc_planning[0,:, :12, :2], sdc_planning_mask[0,:, :12, :2], fut_boxes,last_final_planning)
+        last_final_planning=pred_sdc_traj[:, :12, :2]
     planning_results = planning_metrics.compute()
     planning_metrics.reset()
     from prettytable import PrettyTable
@@ -154,7 +175,7 @@ def planning_eval(results, eval_config, logger):
     metric_dict = {}
 
     planning_tab.field_names = [
-    "metrics", "0.5s", "1.0s", "1.5s", "2.0s", "2.5s", "3.0s", "avg"]
+    "metrics", "0.5s", "1.0s", "1.5s", "2.0s", "2.5s", "3.0s","3.5s","4.0s","4.5s","5.0s","5.5s","6.0s","avg"]
     for key in planning_results.keys():
         value = planning_results[key].tolist()
         new_values = []
@@ -165,6 +186,7 @@ def planning_eval(results, eval_config, logger):
         avg = sum(avg) / len(avg)
         value.append(avg)
         metric_dict[key] = avg
+        # import pdb; pdb.set_trace()
         row_value = []
         row_value.append(key)
         for i in range(len(value)):

@@ -268,6 +268,8 @@ def main():
 
     cfg.data.train.work_dir = cfg.work_dir
     cfg.data.val.work_dir = cfg.work_dir
+    # print("hhhhhhhhhhhhhhh")
+    print(cfg.data.train)
     datasets = [build_dataset(cfg.data.train)]
 
     if len(cfg.workflow) == 2:

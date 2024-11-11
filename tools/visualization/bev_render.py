@@ -5,7 +5,28 @@ import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 
-from projects.mmdet3d_plugin.datasets.utils import box3d_to_corners
+#from .projects.mmdet3d_plugin.datasets.utils import box3d_to_corners
+
+def box3d_to_corners(box3d):
+    if isinstance(box3d, torch.Tensor):
+        box3d = box3d.detach().cpu().numpy()
+    corners_norm = np.stack(np.unravel_index(np.arange(8), [2] * 3), axis=1)
+    corners_norm = corners_norm[[0, 1, 3, 2, 4, 5, 7, 6]]
+    # use relative origin [0.5, 0.5, 0]
+    corners_norm = corners_norm - np.array([0.5, 0.5, 0.5])
+    corners = box3d[:, None, [W, L, H]] * corners_norm.reshape([1, 8, 3])
+
+    # rotate around z axis
+    rot_cos = np.cos(box3d[:, YAW])
+    rot_sin = np.sin(box3d[:, YAW])
+    rot_mat = np.tile(np.eye(3)[None], (box3d.shape[0], 1, 1))
+    rot_mat[:, 0, 0] = rot_cos
+    rot_mat[:, 0, 1] = -rot_sin
+    rot_mat[:, 1, 0] = rot_sin
+    rot_mat[:, 1, 1] = rot_cos
+    corners = (rot_mat[:, None] @ corners[..., None]).squeeze(axis=-1)
+    corners += box3d[:, None, :3]
+    return corners
  
 CMD_LIST = ['Turn Right', 'Turn Left', 'Go Straight']
 COLOR_VECTORS = ['cornflowerblue', 'royalblue', 'slategrey']

@@ -27,7 +27,7 @@ from .utils import (
 
 
 @DATASETS.register_module()
-class NuScenes3DDataset(Dataset):
+class NuScenes3DDataset_roboAD_6s(Dataset):
     DefaultAttribute = {
         "car": "vehicle.parked",
         "pedestrian": "pedestrian.moving",
@@ -144,6 +144,7 @@ class NuScenes3DDataset(Dataset):
             self._set_sequence_group_flag()
         
         self.work_dir = work_dir
+        #import pdb;pdb.set_trace()
         self.eval_config = eval_config
 
     def __len__(self):
@@ -260,6 +261,7 @@ class NuScenes3DDataset(Dataset):
             aug_config = self.get_augmentation()
         data = self.get_data_info(idx)
         data["aug_config"] = aug_config
+        #import pdb; pdb.set_trace()
         data = self.pipeline(data)
         return data
 
@@ -281,6 +283,7 @@ class NuScenes3DDataset(Dataset):
         data = mmcv.load(ann_file, file_format="pkl")
         data_infos = list(sorted(data["infos"], key=lambda e: e["timestamp"]))
         data_infos = data_infos[:: self.load_interval]
+        # import pdb; pdb.set_trace()
         self.metadata = data["metadata"]
         self.version = self.metadata["version"]
         print(self.metadata)
@@ -402,11 +405,17 @@ class NuScenes3DDataset(Dataset):
             anns_results['gt_ego_fut_cmd'] = info['gt_ego_fut_cmd']
         
             ## get future box for planning eval
+            # 
+            
             fut_ts = int(info['gt_ego_fut_masks'].sum())
+            # print("fut_ts",fut_ts)
+
             fut_boxes = []
             cur_scene_token = info["scene_token"]
+            # print("cur_scene_token",cur_scene_token)
             cur_T_global = get_T_global(info)
             for i in range(1, fut_ts + 1):
+                # print("data_infos",len(self.data_infos))
                 fut_info = self.data_infos[index + i]
                 fut_scene_token = fut_info["scene_token"]
                 if cur_scene_token != fut_scene_token:
@@ -472,14 +481,14 @@ class NuScenes3DDataset(Dataset):
                     elif name in ["bicycle", "motorcycle"]:
                         attr = "cycle.with_rider"
                     else:
-                        attr = NuScenes3DDataset.DefaultAttribute[name]
+                        attr = NuScenes3DDataset_roboAD_6s.DefaultAttribute[name]
                 else:
                     if name in ["pedestrian"]:
                         attr = "pedestrian.standing"
                     elif name in ["bus"]:
                         attr = "vehicle.stopped"
                     else:
-                        attr = NuScenes3DDataset.DefaultAttribute[name]
+                        attr = NuScenes3DDataset_roboAD_6s.DefaultAttribute[name]
 
                 nusc_anno = dict(
                     sample_token=sample_token,
@@ -533,7 +542,7 @@ class NuScenes3DDataset(Dataset):
         }
         if not tracking:
             from nuscenes.eval.detection.evaluate import NuScenesEval
-
+            
             nusc_eval = NuScenesEval(
                 nusc,
                 config=self.det3d_eval_configs,
@@ -717,14 +726,14 @@ class NuScenes3DDataset(Dataset):
                     elif name in ["bicycle", "motorcycle"]:
                         attr = "cycle.with_rider"
                     else:
-                        attr = NuScenes3DDataset.DefaultAttribute[name]
+                        attr = NuScenes3DDataset_roboAD_6s.DefaultAttribute[name]
                 else:
                     if name in ["pedestrian"]:
                         attr = "pedestrian.standing"
                     elif name in ["bus"]:
                         attr = "vehicle.stopped"
                     else:
-                        attr = NuScenes3DDataset.DefaultAttribute[name]
+                        attr = NuScenes3DDataset_roboAD_6s.DefaultAttribute[name]
 
                 nusc_anno = dict(
                     sample_token=sample_token,
@@ -827,6 +836,7 @@ class NuScenes3DDataset(Dataset):
         out_dir=None,
         pipeline=None,
     ):
+        
         res_path = "results.pkl" if "trainval" in self.version else "results_mini.pkl"
         res_path = osp.join(self.work_dir, res_path)
         print('All Results write to', res_path)
@@ -873,8 +883,8 @@ class NuScenes3DDataset(Dataset):
             results_dict.update(motion_results_dict)
         
         if eval_mode['with_planning']:
-            from .evaluation.planning.planning_eval import planning_eval
-            planning_results_dict = planning_eval(results, self.eval_config, logger=logger)
+            from .evaluation.planning.planning_eval_roboAD_6s import planning_eval_roboAD_6s
+            planning_results_dict = planning_eval_roboAD_6s(results, self.eval_config, logger=logger)
             results_dict.update(planning_results_dict)
 
         if show or out_dir:

@@ -6,7 +6,7 @@
 
 # stage2
 bash ./tools/dist_train.sh \
-   projects/configs/sparsedrive_small_stage2.py \
+   projects/configs/sparsedrive_small_stage2_6s.py \
    8 \
    --deterministic
 

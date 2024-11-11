@@ -13,8 +13,8 @@ total_batch_size = 48
 num_gpus = 8
 batch_size = total_batch_size // num_gpus
 num_iters_per_epoch = int(length[version] // (num_gpus * batch_size))
-num_epochs = 10
-checkpoint_epoch_interval = 10
+num_epochs = 20
+checkpoint_epoch_interval = 20
 
 checkpoint_config = dict(
     interval=num_iters_per_epoch * checkpoint_epoch_interval
@@ -718,4 +718,4 @@ evaluation = dict(
     eval_mode=eval_mode,
 )
 # ================== pretrained model ========================
-load_from = 'ckpt/sparsedrive_stage1.pth'
+load_from = 'ckpt/sparsedrive_stage2.pth'

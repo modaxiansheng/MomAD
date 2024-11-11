@@ -36,12 +36,12 @@ from nuscenes.nuscenes import NuScenes
 from ....configs.sparsedrive_small_stage2_roboAD import batch_size
 from .next_token_prediction import NextTokenPredictor
 @HEADS.register_module()
-class MotionPlanningHeadroboAD(BaseModule):
+class MotionPlanningHeadroboAD_6s(BaseModule):
     def __init__(
         self,
         fut_ts=12,
         fut_mode=6,
-        ego_fut_ts=6,
+        ego_fut_ts=12,
         ego_fut_mode=3,
         motion_anchor=None,
         plan_anchor=None,
@@ -69,7 +69,7 @@ class MotionPlanningHeadroboAD(BaseModule):
         use_rescore= True
         
     ):
-        super(MotionPlanningHeadroboAD, self).__init__()
+        super(MotionPlanningHeadroboAD_6s, self).__init__()
         self.fut_ts = fut_ts
         self.fut_mode = fut_mode
         self.ego_fut_ts = ego_fut_ts
@@ -79,8 +79,8 @@ class MotionPlanningHeadroboAD(BaseModule):
         self.operation_order = operation_order
         self.batch_size =batch_size
         self.last_planning_classification=torch.zeros([batch_size, 1, 18])
-        self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 6, 2])
-        self.last_final_planning_prediction=torch.zeros([batch_size, 6, 2])
+        self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 12, 2])
+        self.last_final_planning_prediction=torch.zeros([batch_size, 12, 2])
         self.last_plan_query = torch.zeros([batch_size, 1, 18, 256])
         self.last_ego_cmd = torch.zeros([batch_size, 3])
         self.nusc = NuScenes(version='v1.0-trainval', dataroot="data/nuscenes/", verbose=True)
@@ -155,7 +155,7 @@ class MotionPlanningHeadroboAD(BaseModule):
         self.num_det = num_det
         self.num_map = num_map
         #self.sa_atten_layer = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=1, stride=1, padding=0)
-        self.refine_2th_layer = MotionPlanning2thRefinementModule(embed_dims=256, ego_fut_ts=6, ego_fut_mode=6)
+        self.refine_2th_layer = MotionPlanning2thRefinementModule(embed_dims=256, ego_fut_ts=12, ego_fut_mode=6)
 
 
     def init_weights(self):
@@ -325,14 +325,14 @@ class MotionPlanningHeadroboAD(BaseModule):
         bs = planning_classification[0].shape[0]
         #bs = planning_classification_cmd.shape[0] #3
         planning_classification_cmd = planning_classification[-1].reshape(bs, 3, self.ego_fut_mode)#[3, 3, 6]
-        planning_prediction_cmd = planning_prediction[-1].reshape(bs, 3, self.ego_fut_mode, self.ego_fut_ts, 2).cumsum(dim=-2)#[3, 3, 6, 6, 2]
+        planning_prediction_cmd = planning_prediction[-1].reshape(bs, 3, self.ego_fut_mode, self.ego_fut_ts, 2).cumsum(dim=-2)#[3, 3, 6, 12, 2]
         bs_indices = torch.arange(bs, device=planning_classification_cmd.device) #tensor([0, 1, 2], device='cuda:0')
         gt_ego_fut_cmd = metas["gt_ego_fut_cmd"].argmax(dim=-1)#tensor([2, 2, 2], device='cuda:0')
         planning_classification_cmd_select = planning_classification_cmd[bs_indices, gt_ego_fut_cmd]#torch.Size([3, 6])
-        planning_prediction_cmd_select = planning_prediction_cmd[bs_indices, gt_ego_fut_cmd]#torch.Size([3, 6, 6, 2])
+        planning_prediction_cmd_select = planning_prediction_cmd[bs_indices, gt_ego_fut_cmd]#torch.Size([3, 6, 12, 2])
 
         mode_idx = planning_classification_cmd_select.argmax(dim=-1)#tensor([5, 5, 0], device='cuda:0')
-        last_final_planning_prediction = planning_prediction_cmd_select[bs_indices, mode_idx] #torch.Size([3, 6, 2])
+        last_final_planning_prediction = planning_prediction_cmd_select[bs_indices, mode_idx] #torch.Size([3, 12, 2])
         return last_final_planning_prediction
     def select_currect_best_planning(self, last_final_planning_prediction, planning_prediction, current_ego_cmd, last_ego_cmd):
         # import pdb; pdb.set_trace()
@@ -341,7 +341,7 @@ class MotionPlanningHeadroboAD(BaseModule):
         min_idx = torch.argmin(distances_euclidean, dim=-1).cpu().numpy().tolist()
         bs = planning_prediction[0].squeeze(1).shape[0]
         #import pdb;pdb.set_trace()
-        select_currect_best_planning_prediction = torch.where(ego_mask.view(-1, 1, 1), planning_prediction[0].squeeze(1)[torch.arange(bs), min_idx], torch.full((6, 2), 999.9).repeat(bs, 1, 1).to(ego_mask.device))
+        select_currect_best_planning_prediction = torch.where(ego_mask.view(-1, 1, 1), planning_prediction[0].squeeze(1)[torch.arange(bs), min_idx], torch.full((12, 2), 999.9).repeat(bs, 1, 1).to(ego_mask.device))
         #import pdb;pdb.set_trace()
         return select_currect_best_planning_prediction, min_idx, ego_mask
     
@@ -431,7 +431,7 @@ class MotionPlanningHeadroboAD(BaseModule):
 
         # =========== mode anchor init ===========
         motion_anchor = self.get_motion_anchor(det_classification, det_anchors) #motion_anchor torch.Size([6, 900, 6, 12, 2]) #torch.Size([6, 900, 10])  torch.Size([6, 900, 11])
-        plan_anchor = torch.tile( #torch.Size([6, 3, 6, 6, 2])
+        plan_anchor = torch.tile( #torch.Size([6, 3, 6, 12, 2])
             self.plan_anchor[None], (bs, 1, 1, 1, 1)
         )
 
@@ -503,7 +503,7 @@ class MotionPlanningHeadroboAD(BaseModule):
                     motion_cls,
                     motion_reg,
                     plan_cls,#torch.Size([6, 1, 18])
-                    plan_reg,#torch.Size([6, 1, 18, 6, 2])
+                    plan_reg,#torch.Size([6, 1, 18, 12, 2])
                     plan_status,
                 ) = self.layers[i](
                     motion_query, #([6, 900, 6, 256]
@@ -552,9 +552,9 @@ class MotionPlanningHeadroboAD(BaseModule):
             
             device = plan_query.device
             self.last_planning_classification=torch.zeros([batch_size, 1, 18]).detach()
-            self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 6, 2]).detach()
+            self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 12, 2]).detach()
             self.last_plan_query = torch.zeros([batch_size, 1, 18, 256]).detach()
-            self.last_final_planning_prediction  = torch.zeros([batch_size, 6, 2]).detach()
+            self.last_final_planning_prediction  = torch.zeros([batch_size, 12, 2]).detach()
             self.last_ego_cmd = torch.zeros([batch_size, 3]).detach()
         device = plan_query.device
         self.last_planning_classification=self.last_planning_classification.to(device).detach()
@@ -565,9 +565,9 @@ class MotionPlanningHeadroboAD(BaseModule):
         # # # fusion
         # device = plan_query.device
         # self.last_planning_classification=torch.zeros([batch_size, 1, 18]).to(device).detach()
-        # self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 6, 2]).to(device).detach()
+        # self.last_planning_prediction=torch.zeros([batch_size, 1, 18, 12, 2]).to(device).detach()
         # self.last_plan_query = torch.zeros([batch_size, 1, 18, 256]).to(device).detach()
-        # self.last_final_planning_prediction  = torch.zeros([batch_size, 6, 2]).to(device).detach()
+        # self.last_final_planning_prediction  = torch.zeros([batch_size, 12, 2]).to(device).detach()
         # self.last_ego_cmd = torch.zeros([batch_size, 3]).to(device).detach()
 
 
@@ -598,7 +598,7 @@ class MotionPlanningHeadroboAD(BaseModule):
           
         # refine 模块添加
         plan_cls_2th, plan_reg_2th, plan_status_2th = self.refine_2th_layer(enhanced_plan_query, instance_feature[:, num_anchor:], anchor_embed[:, num_anchor:])
-        #(torch.Size([1, 1, 18]), torch.Size([1, 1, 18, 6, 2]), torch.Size([1, 1, 10]))
+        #(torch.Size([1, 1, 18]), torch.Size([1, 1, 18, 12, 2]), torch.Size([1, 1, 10]))
         planning_classification_refined.append(plan_cls_2th)
         planning_prediction_refined.append(plan_reg_2th)
         planning_status_refined.append(plan_status_2th)
@@ -619,10 +619,10 @@ class MotionPlanningHeadroboAD(BaseModule):
         
         planning_output = {
             "classification": planning_classification,#[6, 1, 18] #3是command
-            "prediction": planning_prediction,#[6, 1, 18, 6, 2]
+            "prediction": planning_prediction,#[6, 1, 18, 12, 2]
             "status": planning_status,#[6, 1, 10]
             "classification_refined": planning_classification_refined,#[6, 1, 18] #3是command
-            "prediction_refined": planning_prediction_refined,#[6, 1, 18, 6, 2]
+            "prediction_refined": planning_prediction_refined,#[6, 1, 18, 12, 2]
             "status_refined": planning_status_refined,#[6, 1, 10]
             "period": self.instance_queue.ego_period,
             "anchor_queue": self.instance_queue.ego_anchor_queue,

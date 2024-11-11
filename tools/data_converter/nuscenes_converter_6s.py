@@ -137,18 +137,18 @@ def create_nuscenes_infos(root_path,
         print('test sample: {}'.format(len(train_nusc_infos)))
         data = dict(infos=train_nusc_infos, metadata=metadata)
         info_path = osp.join(out_path,
-                             '{}_infos_test.pkl'.format(info_prefix))
+                             '{}_infos_test_6s.pkl'.format(info_prefix))
         mmcv.dump(data, info_path)
     else:
         print('train sample: {}, val sample: {}'.format(
             len(train_nusc_infos), len(val_nusc_infos)))
         data = dict(infos=train_nusc_infos, metadata=metadata)
         info_path = osp.join(out_path,
-                             '{}_infos_train.pkl'.format(info_prefix))
+                             '{}_infos_train_6s.pkl'.format(info_prefix))
         mmcv.dump(data, info_path)
         data['infos'] = val_nusc_infos
         info_val_path = osp.join(out_path,
-                                 '{}_infos_val.pkl'.format(info_prefix))
+                                 '{}_infos_val_6s.pkl'.format(info_prefix))
         mmcv.dump(data, info_val_path)
 
 def get_available_scenes(nusc):
@@ -199,7 +199,7 @@ def _fill_trainval_infos(nusc,
                          test=False,
                          max_sweeps=10,
                          fut_ts=12,
-                         ego_fut_ts=6):
+                         ego_fut_ts=12):
     """Generate the train/val infos from the raw data.
 
     Args:

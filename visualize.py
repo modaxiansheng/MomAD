@@ -9,6 +9,7 @@ from PIL import Image
 
 import mmcv
 from mmcv import Config
+from mmdet import __version__ as mmdet_version
 from mmdet.datasets import build_dataset
 
 from tools.visualization.bev_render import BEVRender

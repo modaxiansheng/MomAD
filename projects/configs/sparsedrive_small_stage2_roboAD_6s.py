@@ -1,6 +1,6 @@
 # ================ base config ===================
 version = 'mini'
-# version = 'trainval'
+version = 'trainval'
 length = {'trainval': 28130, 'mini': 323}
 
 plugin = True
@@ -59,7 +59,7 @@ roi_size = (30, 60)
 num_sample = 20
 fut_ts = 12
 fut_mode = 6
-ego_fut_ts = 6
+ego_fut_ts = 12
 ego_fut_mode = 6
 queue_length = 4 # history + current
 
@@ -403,7 +403,7 @@ model = dict(
             task_prefix='map',
         ),
         motion_plan_head=dict(
-            type='MotionPlanningHeadroboAD',
+            type='MotionPlanningHeadroboAD_6s',
             fut_ts=fut_ts,
             fut_mode=fut_mode,
             ego_fut_ts=ego_fut_ts,
@@ -513,7 +513,7 @@ model = dict(
 )
 
 # ================== data ========================
-dataset_type = "NuScenes3DDataset_roboAD"
+dataset_type = "NuScenes3DDataset_roboAD_6s"
 data_root = "data/nuscenes/"
 anno_root = "data/infos/" if version == 'trainval' else "data/infos/mini/"
 file_client_args = dict(backend="disk")
@@ -618,8 +618,7 @@ eval_pipeline = [
             'gt_ego_fut_cmd',
             'fut_boxes'
         ],
-        meta_keys=["T_global", "T_global_inv", "timestamp", "instance_id","token"],
-        # meta_keys=['token', 'timestamp']
+        meta_keys=['token', 'timestamp']
     ),
 ]
 
@@ -641,7 +640,7 @@ data_basic_config = dict(
 )
 eval_config = dict(
     **data_basic_config,
-    ann_file=anno_root + 'nuscenes_infos_val.pkl',
+    ann_file=anno_root + 'nuscenes_infos_val_6s.pkl',
     pipeline=eval_pipeline,
     test_mode=True,
 )
@@ -661,7 +660,7 @@ data = dict(
     workers_per_gpu=batch_size,
     train=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_train.pkl",
+        ann_file=anno_root + "nuscenes_infos_train_6s.pkl",
         pipeline=train_pipeline,
         test_mode=False,
         data_aug_conf=data_aug_conf,
@@ -671,7 +670,7 @@ data = dict(
     ),
     val=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_val.pkl",
+        ann_file=anno_root + "nuscenes_infos_val_6s.pkl",
         pipeline=test_pipeline,
         data_aug_conf=data_aug_conf,
         test_mode=True,
@@ -679,7 +678,7 @@ data = dict(
     ),
     test=dict(
         **data_basic_config,
-        ann_file=anno_root + "nuscenes_infos_val.pkl",
+        ann_file=anno_root + "nuscenes_infos_val_6s.pkl",
         pipeline=test_pipeline,
         data_aug_conf=data_aug_conf,
         test_mode=True,
@@ -713,10 +712,10 @@ runner = dict(
 
 # ================== eval ========================
 eval_mode = dict(
-    with_det=False,
-    with_tracking=False,
-    with_map=False,
-    with_motion=False,
+    with_det=True,
+    with_tracking=True,
+    with_map=True,
+    with_motion=True,
     with_planning=True,
     tracking_threshold=0.2,
     motion_threshhold=0.2,

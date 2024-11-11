@@ -331,7 +331,7 @@ class MotionPlanningHead(BaseModule):
                 planning_classification.append(plan_cls)
                 planning_prediction.append(plan_reg)
                 planning_status.append(plan_status)
-        
+        # import pdb; pdb.set_trace()
         self.instance_queue.cache_motion(instance_feature[:, :num_anchor], det_output, metas)
         self.instance_queue.cache_planning(instance_feature[:, num_anchor:], plan_status)
 
