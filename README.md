@@ -79,7 +79,7 @@ python tools/data_converter/nuscenes_converter_6s.py nuscenes \
 
 ## Visualization
 <div align="center">
-  <img src="vis3_1.png" />
+  <img src="vis_5(3).png" />
 </div>
 
 
