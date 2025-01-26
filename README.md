@@ -43,6 +43,8 @@ End-to-end autonomous driving frameworks facilitate seamless integration of perc
 
 ## Results in paper
 
+### Open-loop mertics
+
 - Planning results on [nuScenes](https://github.com/nutonomy/nuscenes-devkit).
 
 | Method | Backbone | L2 (m) 1s  | L2 (m) 2s | L2 (m) 3s | L2 (m) Avg | Col. (%) 1s | Col. (%) 2s | Col. (%) 3s | Col. (%) Avg | TPC (m) 1s | TPC (m) 2s | TPC (m) 3s | TPC (m) Avg | FPS |
@@ -64,6 +66,88 @@ SparseDrive   | 1.75|2.32|2.95| 0.87| 1.54| 2.33| 1.33| 1.66| 1.99|
 | :---: | :---:| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.70 | 1.33 | 0.79|
 **MomAD (Ours)** | 0.33| 0.70| 1.24| 0.76| 0.03| 0.13| 0.79| 0.32| 0.32| 0.54| 1.05| 0.63|
+
+
+### Close-loop mertics
+
+- Open-loop and Closed-loop Results of E2E-AD Methods in Bench2Drive (V0.0.3)} under base training set. `mmt' denotes the extension of VAD on Multi-modal Trajectory. * denotes our re-implementation. 
+
+<table border="1">
+  <thead>
+    <tr>
+      <th rowspan="2">Method</th>
+      <th colspan="1">Open-loop Metric</th>
+      <th colspan="4">Closed-loop Metric</th>
+    </tr>
+    <tr>
+      <th>Avg. L2 ↓</th>
+      <th>DS ↑</th>
+      <th>SR(%) ↑</th>
+      <th>Effi ↑</th>
+      <th>Comf ↑</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>VAD</td>
+      <td>0.91</td>
+      <td>42.35</td>
+      <td>15.00</td>
+      <td>157.94</td>
+      <td>46.01</td>
+    </tr>
+    <tr>
+      <td>VAD mmt*</td>
+      <td>0.89</td>
+      <td>42.87</td>
+      <td>15.91</td>
+      <td>158.12</td>
+      <td>47.22</td>
+    </tr>
+    <tr>
+      <td>Our MomAD (Euclidean)</td>
+      <td>0.84</td>
+      <td>46.12</td>
+      <td>17.45</td>
+      <td>173.35</td>
+      <td>50.98</td>
+    </tr>
+    <tr>
+      <td>Our MomAD</td>
+      <td>0.85</td>
+      <td>45.35</td>
+      <td>17.44</td>
+      <td>162.09</td>
+      <td>49.34</td>
+    </tr>
+    <tr>
+      <td>SparcDrive*</td>
+      <td>0.87</td>
+      <td>44.54</td>
+      <td>16.71</td>
+      <td>170.21</td>
+      <td>48.63</td>
+    </tr>
+    <tr>
+      <td>Our MomAD (Euclidean)</td>
+      <td>0.84</td>
+      <td>46.12</td>
+      <td>17.45</td>
+      <td>173.35</td>
+      <td>50.98</td>
+    </tr>
+    <tr>
+      <td>Our MomAD</td>
+      <td>0.82</td>
+      <td>47.91</td>
+      <td>18.11</td>
+      <td>174.91</td>
+      <td>51.20</td>
+    </tr>
+  </tbody>
+</table>
+
+
 
 ## Trajectory Prediction Consistency (TPC) metric
 To evaluate the planning stability of MomAD, we propose a new [Trajectory Prediction Consistency (TPC) metric](/projects/mmdet3d_plugin/datasets/evaluation/planning/planning_eval_roboAD_6s.py) to measure consistency between predicted and historical trajectories.
