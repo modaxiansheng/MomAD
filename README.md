@@ -70,7 +70,7 @@ SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.
 
 ### Close-loop mertics
 
-- Open-loop and Closed-loop Results of E2E-AD Methods in Bench2Drive (V0.0.3)} under base training set. `mmt' denotes the extension of VAD on Multi-modal Trajectory. * denotes our re-implementation. 
+- Open-loop and Closed-loop Results of E2E-AD Methods in Bench2Drive (V0.0.3)} under base training set. `mmt' denotes the extension of VAD on Multi-modal Trajectory. * denotes our re-implementation. The metircs momad used follows [Bench2Drive](https://github.com/Thinklab-SJTU/Bench2Drive)
 
 <table border="1">
   <thead>
@@ -147,6 +147,131 @@ SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.
   </tbody>
 </table>
 
+### Robustness evaluation
+
+- Robustness analysis on [nuScenes-C](https://github.com/thu-ml/3D_Corruptions_AD)
+
+<table border="1">
+  <thead>
+    <tr>
+      <th rowspan="2">Setting</th>
+      <th rowspan="2">Method</th>
+      <th colspan="2">Detection</th>
+      <th colspan="1">Tracking</th>
+      <th colspan="1">Mapping</th>
+      <th colspan="1">Motion</th>
+      <th colspan="3">Planning</th>
+    </tr>
+    <tr>
+      <th>mAP ↑</th>
+      <th>NDS ↑</th>
+      <th>AMOTA ↑</th>
+      <th>mAP ↓</th>
+      <th>mADE ↓</th>
+      <th>L2 ↓</th>
+      <th>Col. ↓</th>
+      <th>TPC ↓</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Clean</td>
+      <td>SparseDrive</td>
+      <td>0.418</td>
+      <td>0.525</td>
+      <td>0.386</td>
+      <td>55.1</td>
+      <td>0.62</td>
+      <td>0.61</td>
+      <td>0.08</td>
+      <td>0.57</td>
+    </tr>
+    <tr>
+      <td>Clean</td>
+      <td>Our MomAD</td>
+      <td>0.423</td>
+      <td>0.531</td>
+      <td>0.391</td>
+      <td>55.9</td>
+      <td>0.61</td>
+      <td>0.60</td>
+      <td>0.09</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <td>Snow</td>
+      <td>SparseDrive</td>
+      <td>0.091</td>
+      <td>0.111</td>
+      <td>0.102</td>
+      <td>16.0</td>
+      <td>0.98</td>
+      <td>0.88</td>
+      <td>0.32</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <td>Snow</td>
+      <td>Our MomAD</td>
+      <td>0.154</td>
+      <td>0.173</td>
+      <td>0.166</td>
+      <td>20.9</td>
+      <td>0.76</td>
+      <td>0.73</td>
+      <td>0.16</td>
+      <td>0.68</td>
+    </tr>
+    <tr>
+      <td>Fog</td>
+      <td>SparseDrive</td>
+      <td>0.141</td>
+      <td>0.159</td>
+      <td>0.154</td>
+      <td>18.8</td>
+      <td>0.91</td>
+      <td>0.86</td>
+      <td>0.41</td>
+      <td>0.80</td>
+    </tr>
+    <tr>
+      <td>Fog</td>
+      <td>Our MomAD</td>
+      <td>0.197</td>
+      <td>0.197</td>
+      <td>0.206</td>
+      <td>24.9</td>
+      <td>0.73</td>
+      <td>0.71</td>
+      <td>0.18</td>
+      <td>0.67</td>
+    </tr>
+    <tr>
+      <td>Rain</td>
+      <td>SparseDrive</td>
+      <td>0.128</td>
+      <td>0.140</td>
+      <td>0.193</td>
+      <td>19.4</td>
+      <td>0.97</td>
+      <td>0.93</td>
+      <td>0.46</td>
+      <td>0.92</td>
+    </tr>
+    <tr>
+      <td>Rain</td>
+      <td>Our MomAD</td>
+      <td>0.207</td>
+      <td>0.213</td>
+      <td>0.266</td>
+      <td>25.2</td>
+      <td>0.76</td>
+      <td>0.71</td>
+      <td>0.21</td>
+      <td>0.71</td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Trajectory Prediction Consistency (TPC) metric
