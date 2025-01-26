@@ -275,7 +275,7 @@ SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.
 
 
 ## Trajectory Prediction Consistency (TPC) metric
-To evaluate the planning stability of MomAD, we propose a new [Trajectory Prediction Consistency (TPC) metric](/projects/mmdet3d_plugin/datasets/evaluation/planning/planning_eval_roboAD_6s.py) to measure consistency between predicted and historical trajectories.
+To evaluate the planning stability of MomAD, we propose a new [Trajectory Prediction Consistency (TPC) metric](/open_loop/projects/mmdet3d_plugin/datasets/evaluation/planning/planning_eval_roboAD_6s.py) to measure consistency between predicted and historical trajectories.
 
 ## How to generate a 6s nuScenes trajectory dataset？
 ```
@@ -287,7 +287,7 @@ python tools/data_converter/nuscenes_converter_6s.py nuscenes \
     --version v1.0
 ```
 ## Quick Start
-[Quick Start](docs/quick_start.md)
+[Quick Start for Open_loop](open_loop/docs/quick_start.md)
 
 
 
