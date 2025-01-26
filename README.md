@@ -288,6 +288,7 @@ python tools/data_converter/nuscenes_converter_6s.py nuscenes \
 ```
 ## Quick Start
 [Quick Start for Open_loop](open_loop/docs/quick_start.md)
+[Quick start for Close_loop](close_loop/docs/quick_start.md)
 
 
 
