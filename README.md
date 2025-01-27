@@ -147,6 +147,12 @@ SparseDrive   |0.35 | 0.77 | 1.46 | 0.86 | 0.04 | 0.17 | 0.98 | 0.40 | 0.34 | 0.
   </tbody>
 </table>
 
+### Close_loop Vis
+
+<p align="left">
+  <img src = "./close_loop/video_show.gif" width="60%">
+</p>
+
 ### Robustness evaluation
 
 - Robustness analysis on [nuScenes-C](https://github.com/thu-ml/3D_Corruptions_AD)
